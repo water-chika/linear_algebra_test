@@ -23,6 +23,40 @@ bool test_gram_schmidt() {
     return B == gram_schmidt(A);
 }
 
+bool test_determinant() {
+    using Matrix = linear_algebra::matrix<double, 3, 3>;
+    auto A = Matrix{
+        {1, 1, 0},
+        {1, 0, 1},
+        {0, 1, 1}
+    };
+    auto B = Matrix{
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    };
+    auto C = linear_algebra::matrix<double, 6, 6>{
+        {1, 1, 0, 0, 0, 0},
+        {1, 0, 1, 0, 0, 0},
+        {0, 1, 1, 0, 0, 0},
+        {0, 0, 0, 1, 1, 0},
+        {0, 0, 0, 1, 0, 1},
+        {0, 0, 0, 0, 1, 1}
+    };
+    auto D = linear_algebra::matrix<double, 6, 6>{
+        {1, 1, 0, 0, 0, 0},
+        {1, 0, 1, 0, 0, 0},
+        {0, 1, 1, 0, 0, 0},
+        {0, 0, 0, 1, 2, 3},
+        {0, 0, 0, 4, 5, 6},
+        {0, 0, 0, 7, 8, 9}
+    };
+    return determinant(A) == -2 &&
+        determinant(B) == 0 &&
+        determinant(C) == determinant(A)*determinant(A) &&
+        determinant(D) == determinant(A)*determinant(B);
+}
+
 namespace water {
     namespace concept_helper {
         template<class T>
