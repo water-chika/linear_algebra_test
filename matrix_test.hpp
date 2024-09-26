@@ -8,23 +8,34 @@
 #include "combined_reference_matrix.hpp"
 #include <iostream>
 #include <concepts>
+#include <source_location>
+void log(const std::string_view message,
+    const std::source_location location =
+    std::source_location::current())
+{
+    std::clog
+        << location.function_name() << "`: "
+        << message << '\n';
+}
 
 bool test_gram_schmidt() {
-    auto A = linear_algebra::matrix<float, 3, 3>{
+    auto A = linear_algebra::fixsized_matrix<float, 3, 3>{
         {1, 2, 3},
         {-1, 0, -3},
         {0, -2, 3}
     };
-    auto B = linear_algebra::matrix<float, 3, 3>{
+    auto B = linear_algebra::fixsized_matrix<float, 3, 3>{
         {       1,       1,       1,},
         {      -1,       1,       1,},
         {       0,      -2,       1,},
     };
-    return B == gram_schmidt(A);
+    auto passed = B == gram_schmidt(A);
+    log(passed ? " passed" : "failed");
+    return passed;
 }
 
 bool test_determinant() {
-    using Matrix = linear_algebra::matrix<double, 3, 3>;
+    using Matrix = linear_algebra::fixsized_matrix<double, 3, 3>;
     auto A = Matrix{
         {1, 1, 0},
         {1, 0, 1},
@@ -35,7 +46,7 @@ bool test_determinant() {
         {4, 5, 6},
         {7, 8, 9}
     };
-    auto C = linear_algebra::matrix<double, 6, 6>{
+    auto C = linear_algebra::fixsized_matrix<double, 6, 6>{
         {1, 1, 0, 0, 0, 0},
         {1, 0, 1, 0, 0, 0},
         {0, 1, 1, 0, 0, 0},
@@ -43,7 +54,7 @@ bool test_determinant() {
         {0, 0, 0, 1, 0, 1},
         {0, 0, 0, 0, 1, 1}
     };
-    auto D = linear_algebra::matrix<double, 6, 6>{
+    auto D = linear_algebra::fixsized_matrix<double, 6, 6>{
         {1, 1, 0, 0, 0, 0},
         {1, 0, 1, 0, 0, 0},
         {0, 1, 1, 0, 0, 0},
@@ -51,10 +62,40 @@ bool test_determinant() {
         {0, 0, 0, 4, 5, 6},
         {0, 0, 0, 7, 8, 9}
     };
-    return determinant(A) == -2 &&
+    auto passed = determinant(A) == -2 &&
         determinant(B) == 0 &&
-        determinant(C) == determinant(A)*determinant(A) &&
-        determinant(D) == determinant(A)*determinant(B);
+        determinant(C) == determinant(A) * determinant(A) &&
+        determinant(D) == determinant(A) * determinant(B);
+    log(passed ? " passed" : "failed");
+    return passed;
+}
+
+bool test_inverse() {
+    using M2 = linear_algebra::fixsized_matrix<double, 2, 2>;
+    using M3 = linear_algebra::fixsized_matrix<double, 3, 3>;
+    using Vector2 = linear_algebra::fixsized_vector<double, 2>;
+    using Vector3 = linear_algebra::fixsized_vector<double, 3>;
+    auto passed = 
+        length(
+            Vector2{ -2, 1 } -
+            inverse(
+                M2{
+                {2, 5},
+                {1, 4}
+                }
+            ) * Vector2{1, 2}
+        ) < 0.00001 &&
+
+        length(
+            Vector3{3.0 / 4, -1.0 / 2, 1.0 / 4} -
+            inverse(
+                M3{
+                {2, 1, 0},
+                {1, 2, 1},
+                {0, 1, 2}
+                }) * Vector3{1, 0, 0}) < 0.00001;
+    log(passed ? " passed" : "failed");
+    return true;
 }
 
 namespace water {
