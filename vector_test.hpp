@@ -3,11 +3,18 @@
 #include <fixsized_vector.hpp>
 #include <vector>
 #include <functional>
+#include <resizeable_vector.hpp>
 
 bool test0() {
     linear_algebra::fixsized_vector<float, 2> a{1.0f, 0.0f};
     a *= 2.0f;
     return a == linear_algebra::fixsized_vector<float, 2>{2.0f, 0.0f};
+}
+bool test_resizeable_vector_mul() {
+    using Vector = linear_algebra::resizeable_vector<double>;
+    auto a = Vector{ 1.0, 0.0 };
+    a *= 2.0;
+    return a == Vector{ 2.0, 0.0 };
 }
 
 bool test1() {
@@ -55,6 +62,7 @@ bool test_vector() {
         test_element_multi,
         test_ranged_for,
         test_negative,
+        test_resizeable_vector_mul
     };
     for (auto& test : tests) {
         if (test()) {
