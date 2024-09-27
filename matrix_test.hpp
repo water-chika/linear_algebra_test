@@ -9,6 +9,9 @@
 #include <iostream>
 #include <concepts>
 #include <source_location>
+#include <algorithm>
+#include <numeric>
+
 void log(const std::string_view message,
     const std::source_location location =
     std::source_location::current())
@@ -96,6 +99,28 @@ bool test_inverse() {
                 }) * Vector3{1, 0, 0}) < 0.00001;
     log(passed ? " passed" : "failed");
     return true;
+}
+
+bool test_max_determinant() {
+    auto elements = std::array<double, 9>{};
+    std::ranges::iota(elements, 1);
+    std::ranges::sort(elements);
+    double max_det = -std::numeric_limits<double>::infinity();
+    auto A_with_max_det = linear_algebra::fixsized_matrix<double, 3, 3>{};
+    do {
+        auto A = linear_algebra::fixsized_matrix<double, 3, 3>{};
+        foreach(A,
+            [&A, &elements](auto i_j) {
+                auto [i, j] = i_j;
+                A[i_j] = elements[i*3+j];
+            });
+        auto det = determinant(A);
+        if (det > max_det) {
+            max_det = det;
+            A_with_max_det = A;
+        }
+    } while (std::ranges::next_permutation(elements).found);
+    return 412 == max_det;
 }
 
 namespace water {

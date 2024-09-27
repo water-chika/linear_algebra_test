@@ -6,7 +6,8 @@ int main() {
     auto tests = {
         test_gram_schmidt,
         test_determinant,
-        test_inverse
+        test_inverse,
+        test_max_determinant
     };
     for (auto& test : tests) {
         test();
