@@ -5,40 +5,44 @@
 #include <functional>
 #include <resizeable_vector.hpp>
 
+template<class Vector>
 bool test0() {
-    linear_algebra::fixsized_vector<float, 2> a{1.0f, 0.0f};
+    using Element = float;
+    Vector a{1.0f, 0.0f};
     a *= 2.0f;
-    return a == linear_algebra::fixsized_vector<float, 2>{2.0f, 0.0f};
-}
-bool test_resizeable_vector_mul() {
-    using Vector = linear_algebra::resizeable_vector<double>;
-    auto a = Vector{ 1.0, 0.0 };
-    a *= 2.0;
-    return a == Vector{ 2.0, 0.0 };
+    return a == Vector{2.0f, 0.0f};
 }
 
+template<class Vector>
 bool test1() {
-    linear_algebra::fixsized_vector<double, 3> a{ 0.5, 0.5, 0.5 };
+    Vector a{ 0.5, 0.5, 0.5 };
     return 0.75 == dot_product(a, a);
 }
 
+template<class Vector>
 bool test_add() {
-    linear_algebra::fixsized_vector<double, 2> a{ 0.5, -0.5 };
-    linear_algebra::fixsized_vector<double, 2> b{ -1.0, 1.5 };
+    Vector a{ 0.5, -0.5 };
+    Vector b{ -1.0, 1.5 };
     return a + b == linear_algebra::fixsized_vector<double, 2>{-0.5, 1.0};
 }
+
+template<class Vector>
 bool test_sub() {
-    linear_algebra::fixsized_vector<double, 2> a{ 0.5, -0.5 };
-    linear_algebra::fixsized_vector<double, 2> b{ -1.0, 1.5 };
-    return a - b == linear_algebra::fixsized_vector<double, 2>{1.5, -2.0};
+    Vector a{ 0.5, -0.5 };
+    Vector b{ -1.0, 1.5 };
+    return a - b == Vector{1.5, -2.0};
 }
+
+template<class Vector>
 bool test_element_multi() {
-    linear_algebra::fixsized_vector<double, 2> a{ 0.5, -0.5 };
-    linear_algebra::fixsized_vector<double, 2> b{ -1.0, 1.5 };
-    return element_multi(a, b) == linear_algebra::fixsized_vector<double, 2>{-0.5, -0.5*1.5};
+    Vector a{ 0.5, -0.5 };
+    Vector b{ -1.0, 1.5 };
+    return element_multi(a, b) == Vector{-0.5, -0.5*1.5};
 }
+
+template<class Vector>
 bool test_ranged_for() {
-    linear_algebra::fixsized_vector<double, 128> a{};
+    Vector a{};
     for (auto& e : a) {
         e = 1.0;
     }
@@ -48,21 +52,30 @@ bool test_ranged_for() {
     }
     return success;
 }
+
+template<class Vector>
 bool test_negative() {
-    linear_algebra::fixsized_vector<double, 2> a{1.0, -1.0};
-    return -a == linear_algebra::fixsized_vector<double, 2>{-1.0, 1.0};
+    Vector a{1.0, -1.0};
+    return -a == Vector{-1.0, 1.0};
 }
 
 bool test_vector() {
+    using namespace linear_algebra;
     std::vector<std::function<bool()>> tests{
-        test0,
-        test1,
-        test_add,
-        test_sub,
-        test_element_multi,
-        test_ranged_for,
-        test_negative,
-        test_resizeable_vector_mul
+        test0<fixsized_vector<float, 2>>,
+        test0<resizeable_vector<float>>,
+        test1<fixsized_vector<double, 3>>,
+        test1<resizeable_vector<double>>,
+        test_add<fixsized_vector<double, 2>>,
+        test_add<resizeable_vector<double>>,
+        test_sub<fixsized_vector<double, 2>>,
+        test_sub<resizeable_vector<double>>,
+        test_element_multi<fixsized_vector<double, 2>>,
+        test_element_multi<resizeable_vector<double>>,
+        test_ranged_for<fixsized_vector<double, 2>>,
+        test_ranged_for<resizeable_vector<double>>,
+        test_negative<fixsized_vector<double, 2>>,
+        test_negative<resizeable_vector<double>>,
     };
     for (auto& test : tests) {
         if (test()) {
