@@ -12,5 +12,6 @@ int main() {
     for (auto& test : tests) {
         test();
     }
+    linear_algebra_test::set_number<double>::set_index<size_t>::run();
     return 0;
 }
