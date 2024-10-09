@@ -2,11 +2,11 @@
 #include "vector_test.hpp"
 
 int main() {
-    test_vector();
+    test_vector<double>();
     auto tests = {
         test_gram_schmidt,
         test_determinant<double>,
-        //test_inverse<double>,
+        test_inverse<double>,
         test_max_determinant<double>
     };
     for (auto& test : tests) {
