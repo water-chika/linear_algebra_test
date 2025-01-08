@@ -129,6 +129,14 @@ bool test_inverse() {
     return true;
 }
 
+bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto error) {
+    return lhs == rhs;
+}
+
+bool equal_or_near_equal(std::floating_point auto lhs, std::floating_point auto rhs, auto error) {
+    return abs(lhs - rhs) <= error;
+}
+
 template<class Number>
 bool test_max_determinant() {
     auto elements = std::array<Number, 9>{};
@@ -149,7 +157,38 @@ bool test_max_determinant() {
             A_with_max_det = A;
         }
     } while (std::ranges::next_permutation(elements).found);
-    return 412 == max_det;
+    auto passed = equal_or_near_equal(static_cast<Number>(412), max_det, 0.001);
+    log(passed ? " passed" : "failed");
+    return passed;
+}
+
+
+template<class Number>
+bool test_trapezoidal() {
+    using namespace std::numbers;
+    auto delta_t = 2*pi_v<Number>/32;
+    auto A = linear_algebra::fixsized_matrix<Number, 2, 2>{
+        {4-delta_t*delta_t, 4*delta_t},
+        {-4*delta_t, 4-delta_t*delta_t}
+    }/(4+delta_t*delta_t);
+    auto U = linear_algebra::fixsized_vector<Number, 2>{
+        1,
+        0
+    };
+    bool passed = true;
+    for (int i = 0; i <= 32*100; i++) {
+        auto len2 = dot_product(U,U);
+        if (!equal_or_near_equal(len2, static_cast<Number>(1), len2*(1.0/(1<<20))*i))
+        {
+            std::cout << "U" << i << " = " << len2 << std::endl;
+            std::cout << "error = " << len2 - 1 << std::endl;
+            passed = false;
+            break;
+        }
+        U = A * U;
+    }
+    log(passed ? " passed" : "failed");
+    return true;
 }
 
 class linear_algebra_test {

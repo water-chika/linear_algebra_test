@@ -7,7 +7,8 @@ int main() {
         test_gram_schmidt,
         test_determinant<double>,
         test_inverse<double>,
-        test_max_determinant<double>
+        test_max_determinant<double>,
+        test_trapezoidal<double>,
     };
     for (auto& test : tests) {
         test();
