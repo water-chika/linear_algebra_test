@@ -1,18 +1,38 @@
+#include <complex>
+
 #include "matrix_test.hpp"
 #include "vector_test.hpp"
 
-int main() {
-    test_vector<double>();
+template<typename Scalar>
+bool run() {
+    test_vector<Scalar>();
     auto tests = {
         test_gram_schmidt,
-        test_determinant<double>,
-        test_inverse<double>,
-        test_max_determinant<double>,
-        test_trapezoidal<double>,
+        test_determinant<Scalar>,
+        test_inverse<Scalar>,
+        test_max_determinant<Scalar>,
+        test_trapezoidal<Scalar>,
     };
+    bool success = true;
     for (auto& test : tests) {
-        test();
+        success = test();
+        if (!success)
+            break;
     }
-    linear_algebra_test::set_number<double>::set_index<size_t>::run();
+    using t = linear_algebra_test::template set_number<Scalar>::template set_index<size_t>;
+    t::run();
+    return success;
+}
+
+using std::complex;
+
+int main() {
+    bool success = true;
+    
+    if (success) success = run<double>();
+    if (success) success = run<float>();
+    if (success) success = run<complex<double>>();
+    if (success) success = run<complex<float>>();
+    
     return 0;
 }

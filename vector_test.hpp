@@ -16,7 +16,7 @@ bool test0() {
 template<class Vector>
 bool test1() {
     Vector a{ 0.5, 0.5, 0.5 };
-    return 0.75 == dot_product(a, a);
+    return 0.75 == length_square(a);
 }
 
 template<class Vector>
@@ -43,12 +43,13 @@ bool test_element_multi() {
 template<class Vector>
 bool test_ranged_for() {
     Vector a{};
+    linear_algebra::element_type<Vector> one = 1;
     for (auto& e : a) {
-        e = 1.0;
+        e = one;
     }
     bool success = true;
     for (auto e : a) {
-        success = success && e == 1.0;
+        success = success && e == one;
     }
     return success;
 }

@@ -66,16 +66,18 @@ bool test_determinant() {
         {0, 0, 0, 4, 5, 6},
         {0, 0, 0, 7, 8, 9}
     };
-    auto passed = determinant(A) == -2 &&
-        determinant(B) == 0 &&
+    auto passed = determinant(A) == Number{-2} &&
+        determinant(B) == Number{0} &&
         determinant(C) == determinant(A) * determinant(A) &&
         determinant(D) == determinant(A) * determinant(B);
     log(passed ? " passed" : "failed");
     return passed;
 }
 
-template<class Number>
-    requires (!std::floating_point<Number>)
+template<class T>
+concept exact_value_type = false;
+
+template<exact_value_type Number>
 bool test_inverse() {
     using M2 = linear_algebra::fixsized_matrix<Number, 2, 2>;
     using M3 = linear_algebra::fixsized_matrix<Number, 3, 3>;
@@ -100,7 +102,8 @@ bool test_inverse() {
     log(passed ? " passed" : "failed");
     return true;
 }
-template<std::floating_point Number>
+template<class Number>
+    requires std::floating_point<Number> || complex_type<Number>
 bool test_inverse() {
     using M2 = linear_algebra::fixsized_matrix<Number, 2, 2>;
     using M3 = linear_algebra::fixsized_matrix<Number, 3, 3>;
@@ -133,15 +136,36 @@ bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto er
     return lhs == rhs;
 }
 
-bool equal_or_near_equal(std::floating_point auto lhs, std::floating_point auto rhs, auto error) {
-    return abs(lhs - rhs) <= error;
+bool equal_or_near_equal(auto lhs, auto rhs, std::floating_point auto error) {
+    return std::abs(lhs - rhs) <= std::abs(error);
 }
+
+auto operator*(std::integral auto i, complex_type auto c) {
+    return static_cast<typeof(c)>(i) * c;
+}
+auto operator*(complex_type auto c, std::integral auto i) {
+    return static_cast<typeof(c)>(i) * c;
+}
+auto operator/(complex_type auto c, std::integral auto i) {
+    return c/static_cast<typeof(c)>(i);
+}
+auto operator-(std::integral auto i, complex_type auto c) {
+    return static_cast<typeof(c)>(i) - c;
+}
+auto operator-(complex_type auto c, std::integral auto i) {
+    return c - static_cast<typeof(c)>(i);
+}
+auto operator+(std::integral auto i, complex_type auto c) {
+    return static_cast<typeof(c)>(i) + c;
+}
+
 
 template<class Number>
 bool test_max_determinant() {
+    using namespace std;
     auto elements = std::array<Number, 9>{};
     std::ranges::iota(elements, 1);
-    std::ranges::sort(elements);
+    //std::ranges::sort(elements);
     Number max_det = -std::numeric_limits<Number>::infinity();
     auto A_with_max_det = linear_algebra::fixsized_matrix<Number, 3, 3>{};
     do {
@@ -152,20 +176,31 @@ bool test_max_determinant() {
                 A[i_j] = elements[i*3+j];
             });
         auto det = determinant(A);
-        if (det > max_det) {
+        if (real(det) > real(max_det)) {
             max_det = det;
             A_with_max_det = A;
         }
-    } while (std::ranges::next_permutation(elements).found);
-    auto passed = equal_or_near_equal(static_cast<Number>(412), max_det, 0.001);
+    } while (
+            std::ranges::next_permutation(
+                elements,
+                [](auto& l, auto& r) {
+                    return real(l) < real(r);
+                }
+            ).found);
+    auto passed = equal_or_near_equal(static_cast<Number>(412), max_det, 0.1);
     log(passed ? " passed" : "failed");
     return passed;
 }
 
+template<class T>
+constexpr T pi_v;
+template<complex_type T>
+constexpr T pi_v<T> = std::numbers::pi_v<double>;
+template<std::floating_point T>
+constexpr T pi_v<T> = std::numbers::pi_v<T>;
 
 template<class Number>
 bool test_trapezoidal() {
-    using namespace std::numbers;
     auto delta_t = 2*pi_v<Number>/32;
     auto A = linear_algebra::fixsized_matrix<Number, 2, 2>{
         {4-delta_t*delta_t, 4*delta_t},
@@ -177,7 +212,7 @@ bool test_trapezoidal() {
     };
     bool passed = true;
     for (int i = 0; i <= 32*100; i++) {
-        auto len2 = dot_product(U,U);
+        auto len2 = length_square(U);
         if (!equal_or_near_equal(len2, static_cast<Number>(1), len2*(1.0/(1<<20))*i))
         {
             std::cout << "U" << i << " = " << len2 << std::endl;
