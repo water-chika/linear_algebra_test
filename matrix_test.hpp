@@ -146,7 +146,7 @@ bool test_max_determinant() {
     auto A_with_max_det = linear_algebra::fixsized_matrix<Number, 3, 3>{};
     do {
         auto A = linear_algebra::fixsized_matrix<Number, 3, 3>{};
-        foreach(A,
+        foreach_index(A,
             [&A, &elements](auto i_j) {
                 auto [i, j] = i_j;
                 A[i_j] = elements[i*3+j];
