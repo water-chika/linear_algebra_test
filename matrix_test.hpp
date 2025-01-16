@@ -11,6 +11,7 @@
 #include <source_location>
 #include <algorithm>
 #include <numeric>
+#include <cmath>
 
 void log(const std::string_view message,
     const std::source_location location =
@@ -21,19 +22,49 @@ void log(const std::string_view message,
         << message << '\n';
 }
 
+bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto error) {
+    return lhs == rhs;
+}
+
+template<typename T>
+    requires (std::floating_point<T> || complex_type<T>)
+bool equal_or_near_equal(T lhs, auto rhs, std::floating_point auto error) {
+    return std::abs(lhs - rhs) <= std::abs(error);
+}
+
+bool equal_or_near_equal(linear_algebra::concept_helper::matrix auto&& A,
+        linear_algebra::concept_helper::matrix auto&& B, std::floating_point auto error) {
+    if (A.size() != B.size()) {
+        return false;
+    }
+    bool equal = true;
+    foreach_index(A,
+            [&A, &B, &equal, error](auto index) {
+                if (!equal_or_near_equal(A[index],B[index], error)) {
+                    equal = false;
+                }
+            });
+    return equal;
+}
+
 bool test_gram_schmidt() {
     auto A = linear_algebra::fixsized_matrix<float, 3, 3>{
         {1, 2, 3},
         {-1, 0, -3},
         {0, -2, 3}
     };
-    auto B = linear_algebra::fixsized_matrix<float, 3, 3>{
-        {       1,       1,       1,},
-        {      -1,       1,       1,},
-        {       0,      -2,       1,},
-    };
-    auto passed = B == gram_schmidt(A);
+    auto [Q, R] = gram_schmidt(A);
+    auto I = transpose(Q)*Q;
+    decltype(A) I_ = linear_algebra::I;
+    auto passed = equal_or_near_equal(I, I_, 0.0001) && equal_or_near_equal(A,Q*R, 0.0001);
     log(passed ? " passed" : "failed");
+    if (!passed) {
+        std::cout << "A=" << A << std::endl;
+        std::cout << "Q=" << Q << std::endl;
+        std::cout << "Q_T*Q = " << I << std::endl;
+        std::cout << "R=" << R << std::endl;
+        std::cout << "Q*R=" << Q*R << std::endl;
+    }
     return passed;
 }
 
@@ -132,13 +163,6 @@ bool test_inverse() {
     return true;
 }
 
-bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto error) {
-    return lhs == rhs;
-}
-
-bool equal_or_near_equal(auto lhs, auto rhs, std::floating_point auto error) {
-    return std::abs(lhs - rhs) <= std::abs(error);
-}
 
 auto operator*(std::integral auto i, complex_type auto c) {
     return static_cast<typeof(c)>(i) * c;
@@ -224,6 +248,30 @@ bool test_trapezoidal() {
     }
     log(passed ? " passed" : "failed");
     return true;
+}
+
+template<class Number>
+bool test_eigenvalues() {
+    using namespace std;
+    auto t = static_cast<Number>(pi_v<Number>/32);
+    const auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
+        {1, 1},
+        {1, 0}
+    };
+
+    auto A_i = A;
+    for (int i = 0; i < 10; i++) {
+        auto [Q, R] = gram_schmidt(A_i);
+        A_i = R*Q;
+    }
+
+    auto lambda = A_i[{1,1}];
+    decltype(A_i) lambda_I = linear_algebra::I;
+    lambda_I = lambda*lambda_I;
+
+    auto passed = std::abs(determinant(A - lambda_I)) < 0.0001;
+    log(passed ? " passed" : "failed");
+    return passed;
 }
 
 class linear_algebra_test {

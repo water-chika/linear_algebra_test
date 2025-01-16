@@ -12,6 +12,7 @@ bool run() {
         test_inverse<Scalar>,
         test_max_determinant<Scalar>,
         test_trapezoidal<Scalar>,
+        test_eigenvalues<Scalar>,
     };
     bool success = true;
     for (auto& test : tests) {
