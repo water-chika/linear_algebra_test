@@ -253,23 +253,22 @@ bool test_trapezoidal() {
 template<class Number>
 bool test_eigenvalues() {
     using namespace std;
-    auto t = static_cast<Number>(pi_v<Number>/32);
-    const auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
-        {1, 1},
-        {1, 0}
+    auto t = static_cast<Number>(pi_v<Number>/16);
+    auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
+        {cos(t), sin(t)},
+        {sin(t), 0}
     };
 
-    auto A_i = A;
-    for (int i = 0; i < 10; i++) {
-        auto [Q, R] = gram_schmidt(A_i);
-        A_i = R*Q;
+    auto eigenvalues = linear_algebra::eigenvalues(A);
+
+    auto passed = true;
+    for (auto eigenvalue : eigenvalues) {
+        decltype(A) eigenvalue_I = linear_algebra::I;
+        eigenvalue_I = eigenvalue*eigenvalue_I;
+        auto det = determinant(A - eigenvalue_I);
+        passed = passed && std::abs(det) < 0.0001;
     }
 
-    auto lambda = A_i[{1,1}];
-    decltype(A_i) lambda_I = linear_algebra::I;
-    lambda_I = lambda*lambda_I;
-
-    auto passed = std::abs(determinant(A - lambda_I)) < 0.0001;
     log(passed ? " passed" : "failed");
     return passed;
 }
