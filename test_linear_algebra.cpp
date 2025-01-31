@@ -13,6 +13,7 @@ bool run() {
         test_max_determinant<Scalar>,
         test_trapezoidal<Scalar>,
         test_eigenvalues<Scalar>,
+        test_diagonal_matrix<Scalar>,
     };
     bool success = true;
     for (auto& test : tests) {

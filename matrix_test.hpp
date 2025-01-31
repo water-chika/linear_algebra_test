@@ -3,6 +3,7 @@
 #include <matrix.hpp>
 #include <vector.hpp>
 #include <fixsized_matrix.hpp>
+#include <diagonal_matrix.hpp>
 
 #include "matrix.hpp"
 #include "combined_reference_matrix.hpp"
@@ -271,6 +272,19 @@ bool test_eigenvalues() {
 
     log(passed ? " passed" : "failed");
     return passed;
+}
+
+template<class Number>
+bool test_diagonal_matrix() {
+    auto A = linear_algebra::fixsized_matrix<Number, 3, 3> {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    };
+    auto D = linear_algebra::make_diagonal_matrix<Number, 3>({1,2,3});
+    auto B = A*D;
+
+    return true;
 }
 
 class linear_algebra_test {
