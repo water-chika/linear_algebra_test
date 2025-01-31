@@ -4,20 +4,12 @@ project(linear_algebra_test)
 
 add_subdirectory(linear_algebra)
 
-add_library(linear_algebra_test
-    linear_algebra_test.cpp
+add_executable(test_linear_algebra
+    test_linear_algebra.cpp
     matrix_test.hpp
     vector_test.hpp
 )
-target_include_directories(linear_algebra_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(test_linear_algebra PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(linear_algebra_test_double
-    linear_algebra_test_double.cpp
-    matrix_test.hpp
-    vector_test.hpp
-)
-
-set_target_properties(linear_algebra_test PROPERTIES CXX_STANDARD 23)
-target_link_libraries(linear_algebra_test linear_algebra)
-set_target_properties(linear_algebra_test_double PROPERTIES CXX_STANDARD 23)
-target_link_libraries(linear_algebra_test_double linear_algebra_test)
+set_target_properties(test_linear_algebra PROPERTIES CXX_STANDARD 23)
+target_link_libraries(test_linear_algebra linear_algebra)
