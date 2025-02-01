@@ -254,21 +254,32 @@ bool test_trapezoidal() {
 template<class Number>
 bool test_eigenvalues() {
     using namespace std;
+    auto test = [](auto A) {
+        auto eigenvalues = linear_algebra::eigenvalues(A);
+
+        auto passed = true;
+        for (auto eigenvalue : eigenvalues) {
+            decltype(A) eigenvalue_I = linear_algebra::I;
+            eigenvalue_I = eigenvalue*eigenvalue_I;
+            auto det = determinant(A - eigenvalue_I);
+            passed = passed && std::abs(det) < 0.0001;
+        }
+        return passed;
+    };
+
     auto t = static_cast<Number>(pi_v<Number>/16);
     auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
         {cos(t), sin(t)},
         {sin(t), 0}
     };
 
-    auto eigenvalues = linear_algebra::eigenvalues(A);
-
-    auto passed = true;
-    for (auto eigenvalue : eigenvalues) {
-        decltype(A) eigenvalue_I = linear_algebra::I;
-        eigenvalue_I = eigenvalue*eigenvalue_I;
-        auto det = determinant(A - eigenvalue_I);
-        passed = passed && std::abs(det) < 0.0001;
-    }
+    auto passed = test(A) &&
+        test(
+                linear_algebra::fixsized_matrix<Number, 2, 2> {
+                    {5, 5},
+                    {5, 5}
+                }
+            );
 
     log(passed ? " passed" : "failed");
     return passed;
@@ -285,6 +296,22 @@ bool test_diagonal_matrix() {
     auto B = A*D;
 
     return true;
+}
+
+template<class Number>
+bool test_svd() {
+    auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
+        {1, 2, 1, 1},
+        {2, 2, 2, 2},
+        {1, 2, 1, 1}
+    };
+    auto [U, S, VT] = svd(A);
+    auto V = transpose(VT);
+
+    auto passed = equal_or_near_equal(A*V, U*S, 0.00001);
+    log(passed ? " passed" : "failed");
+
+    return passed;
 }
 
 class linear_algebra_test {

@@ -14,6 +14,7 @@ bool run() {
         test_trapezoidal<Scalar>,
         test_eigenvalues<Scalar>,
         test_diagonal_matrix<Scalar>,
+        test_svd<Scalar>,
     };
     bool success = true;
     for (auto& test : tests) {
