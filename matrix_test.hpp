@@ -300,7 +300,7 @@ bool test_diagonal_matrix() {
 
 template<class Number>
 bool test_svd() {
-    auto A = linear_algebra::fixsized_matrix<Number, 2, 2> {
+    auto A = linear_algebra::fixsized_matrix<Number, 3, 4> {
         {1, 2, 1, 1},
         {2, 2, 2, 2},
         {1, 2, 1, 1}
