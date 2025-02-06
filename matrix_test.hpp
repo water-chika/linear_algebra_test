@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <random>
 
 void log(const std::string_view message,
     const std::source_location location =
@@ -48,24 +49,43 @@ bool equal_or_near_equal(linear_algebra::concept_helper::matrix auto&& A,
     return equal;
 }
 
+template<class Number>
 bool test_gram_schmidt() {
-    auto A = linear_algebra::fixsized_matrix<float, 3, 3>{
-        {1, 2, 3},
-        {-1, 0, -3},
-        {0, -2, 3}
-    };
-    auto [Q, R] = gram_schmidt(A);
-    auto I = transpose(Q)*Q;
-    decltype(A) I_ = linear_algebra::I;
-    auto passed = equal_or_near_equal(I, I_, 0.0001) && equal_or_near_equal(A,Q*R, 0.0001);
-    log(passed ? " passed" : "failed");
-    if (!passed) {
-        std::cout << "A=" << A << std::endl;
-        std::cout << "Q=" << Q << std::endl;
-        std::cout << "Q_T*Q = " << I << std::endl;
-        std::cout << "R=" << R << std::endl;
-        std::cout << "Q*R=" << Q*R << std::endl;
+    auto passed = true;
+    auto random_generator = std::minstd_rand0{0};
+    auto random_distribution = std::uniform_int_distribution{-2,2};
+    for (size_t i = 0; passed && i < 1000000ul; i++) {
+        auto A = linear_algebra::fixsized_matrix<Number, 3, 3>{};
+        foreach_element(A,
+                [&random_generator, &random_distribution](auto& e) {
+                    e = static_cast<Number>(random_distribution(random_generator));
+                });
+        auto [Q, R] = gram_schmidt(A);
+        auto Q_QT = Q*transpose(Q);
+        foreach_index(Q_QT,
+                [&Q_QT, &passed](auto i) {
+                    if (i.get_column() == i.get_row()) {
+                        passed = passed &&
+                            ( equal_or_near_equal(Q_QT[i], static_cast<Number>(1), 0.0001)
+                              ||
+                              equal_or_near_equal(Q_QT[i], static_cast<Number>(0), 0.0001)
+                            );
+                    }
+                    else {
+                        passed = passed && equal_or_near_equal(Q_QT[i], static_cast<Number>(0), 0.0001);
+                    }
+                });
+        passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
+        if (!passed) {
+            std::cout << "A=" << A << std::endl;
+            std::cout << "Q=" << Q << std::endl;
+            std::cout << "Q*QT=" << Q_QT << std::endl;
+            std::cout << "R=" << R << std::endl;
+            std::cout << "Q*R=" << Q*R << std::endl;
+        }
     }
+
+    log(passed ? " passed" : "failed");
     return passed;
 }
 

@@ -7,7 +7,7 @@ template<typename Scalar>
 bool run() {
     test_vector<Scalar>();
     auto tests = {
-        test_gram_schmidt,
+        test_gram_schmidt<Scalar>,
         test_determinant<Scalar>,
         test_inverse<Scalar>,
         test_max_determinant<Scalar>,
