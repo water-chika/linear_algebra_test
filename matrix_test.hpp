@@ -61,25 +61,25 @@ bool test_gram_schmidt() {
                     e = static_cast<Number>(random_distribution(random_generator));
                 });
         auto [Q, R] = gram_schmidt(A);
-        auto Q_QT = Q*transpose(Q);
-        foreach_index(Q_QT,
-                [&Q_QT, &passed](auto i) {
+        auto QT_Q = transpose(Q)*Q;
+        foreach_index(QT_Q,
+                [&QT_Q, &passed](auto i) {
                     if (i.get_column() == i.get_row()) {
                         passed = passed &&
-                            ( equal_or_near_equal(Q_QT[i], static_cast<Number>(1), 0.0001)
+                            ( equal_or_near_equal(QT_Q[i], static_cast<Number>(1), 0.0001)
                               ||
-                              equal_or_near_equal(Q_QT[i], static_cast<Number>(0), 0.0001)
+                              equal_or_near_equal(QT_Q[i], static_cast<Number>(0), 0.0001)
                             );
                     }
                     else {
-                        passed = passed && equal_or_near_equal(Q_QT[i], static_cast<Number>(0), 0.0001);
+                        passed = passed && equal_or_near_equal(QT_Q[i], static_cast<Number>(0), 0.0001);
                     }
                 });
         passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
         if (!passed) {
             std::cout << "A=" << A << std::endl;
             std::cout << "Q=" << Q << std::endl;
-            std::cout << "Q*QT=" << Q_QT << std::endl;
+            std::cout << "QT*Q=" << QT_Q << std::endl;
             std::cout << "R=" << R << std::endl;
             std::cout << "Q*R=" << Q*R << std::endl;
         }
