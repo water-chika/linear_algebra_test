@@ -50,16 +50,30 @@ bool equal_or_near_equal(linear_algebra::concept_helper::matrix auto&& A,
 }
 
 template<class Number>
-bool test_gram_schmidt() {
-    auto passed = true;
-    auto random_generator = std::minstd_rand0{0};
-    auto random_distribution = std::uniform_int_distribution{-2,2};
-    for (size_t i = 0; passed && i < 1000000ul; i++) {
+class random_matrix {
+public:
+    random_matrix()
+        : m_generator{0}, m_distribution{-2,2}
+    {}
+    auto operator()() {
         auto A = linear_algebra::fixsized_matrix<Number, 3, 3>{};
         foreach_element(A,
-                [&random_generator, &random_distribution](auto& e) {
-                    e = static_cast<Number>(random_distribution(random_generator));
+                [this](auto& e) {
+                    e = static_cast<Number>(m_distribution(m_generator));
                 });
+        return A;
+    }
+private:
+    std::minstd_rand0 m_generator;
+    std::uniform_int_distribution<int> m_distribution;
+};
+
+template<class Number>
+bool test_gram_schmidt() {
+    auto passed = true;
+    auto get_random_matrix = random_matrix<Number>{};
+    for (size_t i = 0; passed && i < 100000ul; i++) {
+        auto A = get_random_matrix();
         auto [Q, R] = gram_schmidt(A);
         auto QT_Q = transpose(Q)*Q;
         foreach_index(QT_Q,
@@ -318,19 +332,38 @@ bool test_diagonal_matrix() {
     return true;
 }
 
-template<class Number>
-bool test_svd() {
-    auto A = linear_algebra::fixsized_matrix<Number, 3, 4> {
-        {1, 2, 1, 1},
-        {2, 2, 2, 2},
-        {1, 2, 1, 1}
-    };
+bool test_svd(auto A) {
     auto [U, S, VT] = svd(A);
     auto V = transpose(VT);
-
     auto passed = equal_or_near_equal(A*V, U*S, 0.00001);
-    log(passed ? " passed" : "failed");
+    if (!passed) {
+        std::cout << "A*V=" << A*V << std::endl;
+        std::cout << "U*S=" << U*S << std::endl;
+        std::cout << "A*V-U*S=" << A*V-U*S << std::endl;
+    }
 
+    return passed;
+}
+
+template<class Number>
+bool test_svd() {
+    auto A = linear_algebra::fixsized_matrix<Number, 10, 10> {};
+    foreach_index(A,
+            [&A](auto i) {
+                auto c = i.get_column(), r = i.get_row();
+                A[i] = c*c + r*r;
+            });
+    auto N = A.size().get_column();
+    A /= static_cast<linear_algebra::element_type<typeof(A)>>(N*N);
+    auto passed = test_svd(A);
+
+    auto get_random_matrix = random_matrix<Number>();
+    for (int i = 0; passed && i < 100; i++) {
+        auto A = get_random_matrix();
+        passed = passed && test_svd(A);
+    }
+
+    log(passed ? " passed" : "failed");
     return passed;
 }
 
