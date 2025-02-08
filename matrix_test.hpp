@@ -13,6 +13,7 @@
 #include <numeric>
 #include <cmath>
 #include <random>
+#include <numbers>
 
 void log(const std::string_view message,
     const std::source_location location =
@@ -199,22 +200,22 @@ bool test_inverse() {
 
 
 auto operator*(std::integral auto i, complex_type auto c) {
-    return static_cast<typeof(c)>(i) * c;
+    return static_cast<decltype(c)>(i) * c;
 }
 auto operator*(complex_type auto c, std::integral auto i) {
-    return static_cast<typeof(c)>(i) * c;
+    return static_cast<decltype(c)>(i) * c;
 }
 auto operator/(complex_type auto c, std::integral auto i) {
-    return c/static_cast<typeof(c)>(i);
+    return c/static_cast<decltype(c)>(i);
 }
 auto operator-(std::integral auto i, complex_type auto c) {
-    return static_cast<typeof(c)>(i) - c;
+    return static_cast<decltype(c)>(i) - c;
 }
 auto operator-(complex_type auto c, std::integral auto i) {
-    return c - static_cast<typeof(c)>(i);
+    return c - static_cast<decltype(c)>(i);
 }
 auto operator+(std::integral auto i, complex_type auto c) {
-    return static_cast<typeof(c)>(i) + c;
+    return static_cast<decltype(c)>(i) + c;
 }
 
 
@@ -222,7 +223,7 @@ template<class Number>
 bool test_max_determinant() {
     using namespace std;
     auto elements = std::array<Number, 9>{};
-    std::ranges::iota(elements, 1);
+    std::iota(elements.begin(), elements.end(), 1);
     //std::ranges::sort(elements);
     Number max_det = -std::numeric_limits<Number>::infinity();
     auto A_with_max_det = linear_algebra::fixsized_matrix<Number, 3, 3>{};
@@ -250,12 +251,21 @@ bool test_max_determinant() {
     return passed;
 }
 
+#ifdef __cpp_lib_math_constants
 template<class T>
 constexpr T pi_v;
 template<complex_type T>
 constexpr T pi_v<T> = std::numbers::pi_v<double>;
 template<std::floating_point T>
 constexpr T pi_v<T> = std::numbers::pi_v<T>;
+#else
+template<class T>
+constexpr T pi_v = 3.1415926;
+template<complex_type T>
+constexpr T pi_v<T> = 3.1415926;
+template<std::floating_point T>
+constexpr T pi_v<T> = 3.1415926;
+#endif
 
 template<class Number>
 bool test_trapezoidal() {
@@ -353,7 +363,7 @@ bool test_svd() {
                 A[i] = c*c + r*r;
             });
     auto N = A.size().get_column();
-    A /= static_cast<linear_algebra::element_type<typeof(A)>>(N*N);
+    A /= static_cast<linear_algebra::element_type<decltype(A)>>(N*N);
     auto passed = test_svd(A);
 
     auto get_random_matrix = random_matrix<Number>();
