@@ -1,11 +1,18 @@
 #include <complex>
 
-#include "matrix_test.hpp"
+#include "modular_arithmetic_test.hpp"
 #include "vector_test.hpp"
+#include "matrix_test.hpp"
 
 template<typename Scalar>
 bool run() {
+    // modular_arithmetic tests
+    test_modular_arithmetic();
+
+    // vector tests
     test_vector<Scalar>();
+
+    // matrix tests
     auto tests = {
         test_gram_schmidt<Scalar>,
         test_determinant<Scalar>,
