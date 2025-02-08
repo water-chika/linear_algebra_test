@@ -1,12 +1,11 @@
 #pragma once
 
-#include <matrix.hpp>
-#include <vector.hpp>
-#include <fixsized_matrix.hpp>
-#include <diagonal_matrix.hpp>
+#include <matrix/matrix.hpp>
+#include <vector/vector.hpp>
+#include <matrix/fixsized_matrix.hpp>
+#include <matrix/diagonal_matrix.hpp>
 
-#include "matrix.hpp"
-#include "combined_reference_matrix.hpp"
+#include <matrix/combined_reference_matrix.hpp>
 #include <iostream>
 #include <concepts>
 #include <source_location>

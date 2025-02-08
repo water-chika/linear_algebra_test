@@ -1,9 +1,9 @@
 #pragma once
-#include <vector.hpp>
-#include <fixsized_vector.hpp>
+#include <vector/vector.hpp>
+#include <vector/fixsized_vector.hpp>
 #include <vector>
 #include <functional>
-#include <resizeable_vector.hpp>
+#include <vector/resizeable_vector.hpp>
 
 template<class Vector>
 bool test0() {
