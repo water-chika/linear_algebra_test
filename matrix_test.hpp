@@ -1,11 +1,13 @@
 #pragma once
 
-#include <matrix/matrix.hpp>
 #include <vector/vector.hpp>
+
+#include <matrix/matrix.hpp>
 #include <matrix/fixsized_matrix.hpp>
 #include <matrix/diagonal_matrix.hpp>
-
+#include <matrix/dynamic_sized_matrix.hpp>
 #include <matrix/combined_reference_matrix.hpp>
+
 #include <iostream>
 #include <concepts>
 #include <source_location>
@@ -57,6 +59,10 @@ public:
     {}
     auto operator()() {
         auto A = linear_algebra::fixsized_matrix<Number, 3, 3>{};
+        this->operator()(A);
+        return A;
+    }
+    auto& operator()(linear_algebra::matrix auto& A) {
         foreach_element(A,
                 [this](auto& e) {
                     e = static_cast<Number>(m_distribution(m_generator));
@@ -68,35 +74,45 @@ private:
     std::uniform_int_distribution<int> m_distribution;
 };
 
+bool test_gram_schmidt(linear_algebra::matrix auto A) {
+    using element_t = linear_algebra::element_type<decltype(A)>;
+    auto [Q, R] = gram_schmidt(A);
+    auto QT_Q = transpose(Q)*Q;
+    bool passed = true;
+    foreach_index(QT_Q,
+            [&QT_Q, &passed](auto i) {
+                if (i.get_column() == i.get_row()) {
+                    passed = passed &&
+                        ( equal_or_near_equal(QT_Q[i], static_cast<element_t>(1), 0.0001)
+                          ||
+                          equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), 0.0001)
+                        );
+                }
+                else {
+                    passed = passed && equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), 0.0001);
+                }
+            });
+    passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
+    if (!passed) {
+        std::cout << "A=" << A << std::endl;
+        std::cout << "Q=" << Q << std::endl;
+        std::cout << "QT*Q=" << QT_Q << std::endl;
+        std::cout << "R=" << R << std::endl;
+        std::cout << "Q*R=" << Q*R << std::endl;
+    }
+    return passed;
+}
+
 template<class Number>
 bool test_gram_schmidt() {
     auto passed = true;
     auto get_random_matrix = random_matrix<Number>{};
     for (size_t i = 0; passed && i < 100000ul; i++) {
         auto A = get_random_matrix();
-        auto [Q, R] = gram_schmidt(A);
-        auto QT_Q = transpose(Q)*Q;
-        foreach_index(QT_Q,
-                [&QT_Q, &passed](auto i) {
-                    if (i.get_column() == i.get_row()) {
-                        passed = passed &&
-                            ( equal_or_near_equal(QT_Q[i], static_cast<Number>(1), 0.0001)
-                              ||
-                              equal_or_near_equal(QT_Q[i], static_cast<Number>(0), 0.0001)
-                            );
-                    }
-                    else {
-                        passed = passed && equal_or_near_equal(QT_Q[i], static_cast<Number>(0), 0.0001);
-                    }
-                });
-        passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
-        if (!passed) {
-            std::cout << "A=" << A << std::endl;
-            std::cout << "Q=" << Q << std::endl;
-            std::cout << "QT*Q=" << QT_Q << std::endl;
-            std::cout << "R=" << R << std::endl;
-            std::cout << "Q*R=" << Q*R << std::endl;
-        }
+        passed = passed && test_gram_schmidt(A);
+        auto B = linear_algebra::dynamic_sized_matrix<Number>{linear_algebra::matrix_index{3,3}};
+        get_random_matrix(B);
+        passed = passed && test_gram_schmidt(B);
     }
 
     log(passed ? " passed" : "failed");
