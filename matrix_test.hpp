@@ -392,73 +392,23 @@ bool test_svd() {
     return passed;
 }
 
-class linear_algebra_test {
-public:
-    template<class Number>
-    class set_number {
-    public:
-        template<std::integral Integral>
-        class set_index {
-        public:
-            static void run() {
-                linear_algebra::fixsized_vector<Number, 2> v{ 4.0f, 1.0f }, u{ 2.0f, -1.0f };
-                std::cout << "v = " << v << ", u = " << u << std::endl;
-                auto combination = Number{ 2.0 } *v + Number{ -3.0f }*u;
-                std::cout << combination << std::endl;
-                std::cout << dot_product(Number{ 0.5f } *v * Number{ 2.0f }, Number{ 2.0f } *u * Number{ 0.5f }) << std::endl;
-                linear_algebra::fixsized_matrix<Number, 2, 2> A{ linear_algebra::column_vector{v}, linear_algebra::column_vector{u} };
-                std::cout << "A is below: " << A << std::endl;
-                std::cout << A.column(0) << std::endl;
-                std::cout << A.column(1) << std::endl;
-                std::cout << A.row(0) << std::endl;
-                std::cout << A.row(1) << std::endl;
-                A.row(1) -= A.row(0) * Number{2};
-                std::cout << "After subtract 2 * row 0 from row 1, A is below: " << A << std::endl;
-                
-                auto U = linear_algebra::eliminate(A);
-                std::cout << "The elimination U of A is below: " << U << std::endl;
-
-                {
-                    using namespace linear_algebra;
-                    auto A_I = make_fixsized_matrix_with_columns<Number, 3, 6>({fixsized_vector<Number, 3>{2,1,1}, fixsized_vector<Number, 3>{1,2,1}, fixsized_vector<Number, 3>{1,1,2},
-                        fixsized_vector<Number, 3>{1,0,0}, fixsized_vector<Number, 3>{0,1,0}, fixsized_vector<Number, 3>{0,0,1}});
-                    std::cout << "set A_I = " << A_I << std::endl;
-                    auto res = eliminate(A_I);
-                    std::cout << "after eliminate, it =" << res << std::endl;
-                    res = back_substitution(res);
-                    std::cout << "after back substitution, it =" << res << std::endl;
-                }
-                {
-                    auto A = linear_algebra::fixsized_matrix<int, 3, 3>{
-                        {1, 0, 1},
-                        {2, 3, 0},
-                        {5, 4, 7}
-                    };
-                    std::cout << "test initializer, A = " << A << std::endl;
-                }
-                try{
-                    using namespace linear_algebra;
-                    std::cout << "This is chapter 2, exercise 31." << std::endl;
-                    auto A = fixsized_matrix<Number, 3, 3>{
-                        {2, 1, 1},
-                        {1, 2, 1},
-                        {1, 1, 2}
-                    };
-                    std::cout << "A = " << A << std::endl;
-                    std::cout << "A inverse = " << inverse(A) << std::endl;
-                    auto B = fixsized_matrix<Number, 3, 3>{
-                        {2, -1, -1},
-                        {-1, 2, -1},
-                        {-1, -1, 2}
-                    };
-                    std::cout << "B = " << B << std::endl;
-                    std::cout << "B inverse = " <<
-                        inverse(B) << std::endl;
-                }
-                catch (std::exception& e) {
-                    std::cout << e.what() << std::endl;
-                }
-            }
-        };
+template<class Scalar>
+auto test_matrix() {
+    auto tests = {
+        test_gram_schmidt<Scalar>,
+        test_determinant<Scalar>,
+        test_inverse<Scalar>,
+        test_max_determinant<Scalar>,
+        test_trapezoidal<Scalar>,
+        test_eigenvalues<Scalar>,
+        test_diagonal_matrix<Scalar>,
+        test_svd<Scalar>,
     };
-};
+    bool success = true;
+    for (auto& test : tests) {
+        success = test();
+        if (!success)
+            break;
+    }
+    return success;
+}

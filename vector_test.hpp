@@ -63,7 +63,7 @@ bool test_negative() {
 template<class Number>
 bool test_vector() {
     using namespace linear_algebra;
-    std::vector<std::function<bool()>> tests{
+    std::vector<std::function<bool()>> simple_tests{
         test0<fixsized_vector<Number, 2>>,
         test0<resizeable_vector<Number>>,
         test1<fixsized_vector<Number, 3>>,
@@ -79,7 +79,10 @@ bool test_vector() {
         test_negative<fixsized_vector<Number, 2>>,
         test_negative<resizeable_vector<Number>>,
     };
-    for (auto& test : tests) {
+    auto simple_tests_size = simple_tests.size();
+    for (decltype(simple_tests_size) i = 0; i < simple_tests_size; i++) {
+        auto& test = simple_tests[i];
+        std::cout << "simple test " << i << " ";
         if (test()) {
             std::cout << "passed" << std::endl;
         }

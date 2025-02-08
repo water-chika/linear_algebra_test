@@ -3,12 +3,13 @@
 
 bool test_modular_arithmetic() {
     using m_t = linear_algebra::modular_arithmetic<size_t, 3>;
+    auto passed = true;
     m_t a{1}, b{2};
     auto c = a+b;
-    assert(c == 0);
+    passed = passed && c == 0;
     auto d = a-b;
-    assert(d == 2);
+    passed = passed && d == 2;
     auto e = a*b;
-    assert(e == 2);
-    return true;
+    passed = passed && e == 2;
+    return passed;
 }

@@ -6,32 +6,11 @@
 
 template<typename Scalar>
 bool run() {
-    // modular_arithmetic tests
-    test_modular_arithmetic();
-
-    // vector tests
-    test_vector<Scalar>();
-
-    // matrix tests
-    auto tests = {
-        test_gram_schmidt<Scalar>,
-        test_determinant<Scalar>,
-        test_inverse<Scalar>,
-        test_max_determinant<Scalar>,
-        test_trapezoidal<Scalar>,
-        test_eigenvalues<Scalar>,
-        test_diagonal_matrix<Scalar>,
-        test_svd<Scalar>,
-    };
-    bool success = true;
-    for (auto& test : tests) {
-        success = test();
-        if (!success)
-            break;
-    }
-    using t = linear_algebra_test::template set_number<Scalar>::template set_index<size_t>;
-    t::run();
-    return success;
+    bool passed = true;
+    passed = test_modular_arithmetic();
+    passed = passed && test_vector<Scalar>();
+    passed = passed && test_matrix<Scalar>();
+    return passed;
 }
 
 using std::complex;
