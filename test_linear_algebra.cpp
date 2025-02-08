@@ -17,11 +17,15 @@ using std::complex;
 
 int main() {
     bool success = true;
+
+    auto tests = std::vector<std::function<bool()>>{
+        run<double>,
+        run<float>,
+        run<complex<double>>,
+        run<complex<float>>
+    };
+
+    auto all_passed = run_simple_tests("different element type", tests);
     
-    if (success) success = run<double>();
-    if (success) success = run<float>();
-    if (success) success = run<complex<double>>();
-    if (success) success = run<complex<float>>();
-    
-    return 0;
+    return all_passed ? 0 : -1;
 }

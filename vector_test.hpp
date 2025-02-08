@@ -5,6 +5,8 @@
 #include <functional>
 #include <vector/resizeable_vector.hpp>
 
+#include "test.hpp"
+
 template<class Vector>
 bool test0() {
     using Element = float;
@@ -79,16 +81,6 @@ bool test_vector() {
         test_negative<fixsized_vector<Number, 2>>,
         test_negative<resizeable_vector<Number>>,
     };
-    auto simple_tests_size = simple_tests.size();
-    for (decltype(simple_tests_size) i = 0; i < simple_tests_size; i++) {
-        auto& test = simple_tests[i];
-        std::cout << "simple test " << i << " ";
-        if (test()) {
-            std::cout << "passed" << std::endl;
-        }
-        else {
-            std::cout << "failed" << std::endl;
-        }
-    }
-    return true;
+    auto all_passed = run_simple_tests("vector tests", simple_tests);
+    return all_passed;
 }

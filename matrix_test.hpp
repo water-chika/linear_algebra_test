@@ -16,15 +16,8 @@
 #include <cmath>
 #include <random>
 #include <numbers>
-
-void log(const std::string_view message,
-    const std::source_location location =
-    std::source_location::current())
-{
-    std::clog
-        << location.function_name() << "`: "
-        << message << '\n';
-}
+#include <functional>
+#include <vector>
 
 bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto error) {
     return lhs == rhs;
@@ -114,8 +107,6 @@ bool test_gram_schmidt() {
         get_random_matrix(B);
         passed = passed && test_gram_schmidt(B);
     }
-
-    log(passed ? " passed" : "failed");
     return passed;
 }
 
@@ -152,7 +143,6 @@ bool test_determinant() {
         determinant(B) == Number{0} &&
         determinant(C) == determinant(A) * determinant(A) &&
         determinant(D) == determinant(A) * determinant(B);
-    log(passed ? " passed" : "failed");
     return passed;
 }
 
@@ -181,7 +171,6 @@ bool test_inverse() {
                 {1, 2, 1},
                 {0, 1, 2}
                 }) * Vector3{1, 0, 0};
-    log(passed ? " passed" : "failed");
     return true;
 }
 template<class Number>
@@ -210,7 +199,6 @@ bool test_inverse() {
                 {1, 2, 1},
                 {0, 1, 2}
                 }) * Vector3{1, 0, 0}) < 0.00001;
-    log(passed ? " passed" : "failed");
     return true;
 }
 
@@ -263,7 +251,6 @@ bool test_max_determinant() {
                 }
             ).found);
     auto passed = equal_or_near_equal(static_cast<Number>(412), max_det, 0.1);
-    log(passed ? " passed" : "failed");
     return passed;
 }
 
@@ -306,7 +293,6 @@ bool test_trapezoidal() {
         }
         U = A * U;
     }
-    log(passed ? " passed" : "failed");
     return true;
 }
 
@@ -340,7 +326,6 @@ bool test_eigenvalues() {
                 }
             );
 
-    log(passed ? " passed" : "failed");
     return passed;
 }
 
@@ -371,7 +356,7 @@ bool test_svd(auto A) {
 }
 
 template<class Number>
-bool test_svd() {
+bool test_svd_simple() {
     auto A = linear_algebra::fixsized_matrix<Number, 10, 10> {};
     foreach_index(A,
             [&A](auto i) {
@@ -388,13 +373,12 @@ bool test_svd() {
         passed = passed && test_svd(A);
     }
 
-    log(passed ? " passed" : "failed");
     return passed;
 }
 
 template<class Scalar>
 auto test_matrix() {
-    auto tests = {
+    auto tests = std::vector<std::function<bool()>>{
         test_gram_schmidt<Scalar>,
         test_determinant<Scalar>,
         test_inverse<Scalar>,
@@ -402,13 +386,7 @@ auto test_matrix() {
         test_trapezoidal<Scalar>,
         test_eigenvalues<Scalar>,
         test_diagonal_matrix<Scalar>,
-        test_svd<Scalar>,
+        test_svd_simple<Scalar>,
     };
-    bool success = true;
-    for (auto& test : tests) {
-        success = test();
-        if (!success)
-            break;
-    }
-    return success;
+    return run_simple_tests("matrix test", tests);
 }
