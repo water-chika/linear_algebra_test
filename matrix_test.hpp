@@ -103,7 +103,8 @@ bool test_gram_schmidt() {
     for (size_t i = 0; passed && i < 100000ul; i++) {
         auto A = get_random_matrix();
         passed = passed && test_gram_schmidt(A);
-        auto B = linear_algebra::dynamic_sized_matrix<Number>{linear_algebra::matrix_index{3,3}};
+        using matrix_type = linear_algebra::dynamic_sized_matrix<Number>;
+        auto B = matrix_type{{3,3}};
         get_random_matrix(B);
         passed = passed && test_gram_schmidt(B);
     }
