@@ -19,6 +19,15 @@ bool test_modular_arithmetic() {
         [&sub_mod3](){ return sub_mod3(1,2) == 2; },
         [&mul_mod3](){ return mul_mod3(1,2) == 2; },
         [&div_mod3](){ return div_mod3(1,2) == 2; },
+        []() {
+            auto add_mod26 = [](auto lhs, auto rhs) { return mod(lhs+rhs, 26); };
+            auto sub_mod26 = [](auto lhs, auto rhs) { return mod(lhs-rhs, 26); };
+            auto mul_mod26 = [](auto lhs, auto rhs) { return mod(lhs*rhs, 26); };
+            auto div_mod26 = [](auto lhs, auto rhs) {
+                return modular_arithmetic::divides(lhs,rhs, 26);
+            };
+            return true;
+        },
     };
     return run_simple_tests("modular_arithmetic", tests);
 }
