@@ -3,6 +3,9 @@
 #include <functional>
 
 #include <modular_arithmetic.hpp>
+#include <matrix/matrix.hpp>
+#include <matrix/fixsized_matrix.hpp>
+#include <matrix/combined_reference_matrix.hpp>
 
 #include "test.hpp"
 
@@ -26,6 +29,19 @@ bool test_modular_arithmetic() {
             auto div_mod26 = [](auto lhs, auto rhs) {
                 return modular_arithmetic::divides(lhs,rhs, 26);
             };
+            auto inv_mod26 = [](auto v) {
+                return modular_arithmetic::inverse(v, 26);
+            };
+            auto is_invertible_mod26 = [](auto v) {
+                return modular_arithmetic::is_invertible(v, 26);
+            };
+            auto E = linear_algebra::fixsized_matrix<int, 3, 3>{
+                {2, 3, 15},
+                {5, 8, 12},
+                {1, 13, 4}
+            };
+            auto D = inverse(E, sub_mod26, mul_mod26, div_mod26, inv_mod26, is_invertible_mod26);
+            std::cout << D << std::endl;
             return true;
         },
     };
