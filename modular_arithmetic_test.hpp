@@ -41,8 +41,12 @@ bool test_modular_arithmetic() {
                 {1, 13, 4}
             };
             auto D = inverse(E, sub_mod26, mul_mod26, div_mod26, inv_mod26, is_invertible_mod26);
-            std::cout << D << std::endl;
-            return true;
+            auto I = linear_algebra::fixsized_matrix<int, 3, 3>{
+                {1, 0, 0},
+                {0, 1, 0},
+                {0, 0, 1}
+            };
+            return multiplies(D,E, add_mod26, mul_mod26)== I;
         },
     };
     return run_simple_tests("modular_arithmetic", tests);
