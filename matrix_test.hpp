@@ -378,16 +378,19 @@ bool test_svd_simple() {
 }
 
 template<class Scalar>
-auto test_matrix() {
-    auto tests = std::vector<std::function<bool()>>{
-        test_gram_schmidt<Scalar>,
-        test_determinant<Scalar>,
-        test_inverse<Scalar>,
-        test_max_determinant<Scalar>,
-        test_trapezoidal<Scalar>,
-        test_eigenvalues<Scalar>,
-        test_diagonal_matrix<Scalar>,
-        test_svd_simple<Scalar>,
-    };
-    return run_simple_tests("matrix test", tests);
-}
+class matrix_tests_getter {
+public:
+    auto get_tests() {
+        auto tests = std::vector<std::function<bool()>>{
+            test_gram_schmidt<Scalar>,
+            test_determinant<Scalar>,
+            test_inverse<Scalar>,
+            test_max_determinant<Scalar>,
+            test_trapezoidal<Scalar>,
+            test_eigenvalues<Scalar>,
+            test_diagonal_matrix<Scalar>,
+            test_svd_simple<Scalar>,
+        };
+        return tests;
+    }
+};

@@ -63,24 +63,26 @@ bool test_negative() {
 }
 
 template<class Number>
-bool test_vector() {
-    using namespace linear_algebra;
-    std::vector<std::function<bool()>> simple_tests{
-        test0<fixsized_vector<Number, 2>>,
-        test0<resizeable_vector<Number>>,
-        test1<fixsized_vector<Number, 3>>,
-        test1<resizeable_vector<Number>>,
-        test_add<fixsized_vector<Number, 2>>,
-        test_add<resizeable_vector<Number>>,
-        test_sub<fixsized_vector<Number, 2>>,
-        test_sub<resizeable_vector<Number>>,
-        test_element_multi<fixsized_vector<Number, 2>>,
-        test_element_multi<resizeable_vector<Number>>,
-        test_ranged_for<fixsized_vector<Number, 2>>,
-        test_ranged_for<resizeable_vector<Number>>,
-        test_negative<fixsized_vector<Number, 2>>,
-        test_negative<resizeable_vector<Number>>,
-    };
-    auto all_passed = run_simple_tests("vector tests", simple_tests);
-    return all_passed;
-}
+class vector_tests_getter {
+public:
+    auto get_tests() {
+        using namespace linear_algebra;
+        std::vector<std::function<bool()>> simple_tests{
+            test0<fixsized_vector<Number, 2>>,
+            test0<resizeable_vector<Number>>,
+            test1<fixsized_vector<Number, 3>>,
+            test1<resizeable_vector<Number>>,
+            test_add<fixsized_vector<Number, 2>>,
+            test_add<resizeable_vector<Number>>,
+            test_sub<fixsized_vector<Number, 2>>,
+            test_sub<resizeable_vector<Number>>,
+            test_element_multi<fixsized_vector<Number, 2>>,
+            test_element_multi<resizeable_vector<Number>>,
+            test_ranged_for<fixsized_vector<Number, 2>>,
+            test_ranged_for<resizeable_vector<Number>>,
+            test_negative<fixsized_vector<Number, 2>>,
+            test_negative<resizeable_vector<Number>>,
+        };
+        return simple_tests;
+    }
+};

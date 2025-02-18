@@ -13,3 +13,6 @@ target_include_directories(test_linear_algebra PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 
 set_target_properties(test_linear_algebra PROPERTIES CXX_STANDARD 23)
 target_link_libraries(test_linear_algebra linear_algebra)
+
+find_library(tbb tbb)
+target_link_libraries(test_linear_algebra tbb)
