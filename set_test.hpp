@@ -18,6 +18,15 @@ public:
             },
             []() {
                 return set::is_subset_v<int32_t, std::variant<int32_t, uint32_t>>;
+            },
+            []() {
+                return set::is_subset_v<int16_t, double>;
+            },
+            []() {
+                return set::is_subset_v<int32_t, double>;
+            },
+            []() {
+                return !set::is_subset_v<int32_t, float>;
             }
         };
     }
