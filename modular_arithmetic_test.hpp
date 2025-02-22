@@ -50,6 +50,28 @@ public:
                 };
                 return multiplies(D,E, add_mod26, mul_mod26)== I;
             },
+            []() {
+                auto args_vector = std::vector{
+                    std::array{2, 3, 7},
+                    {12,5,23},
+                    {12,5,26},
+                    {3,4,5},
+                    {1,5,6},
+                };
+                auto res_vector = std::vector{
+                    3,7,18,2,5
+                };
+                assert(res_vector.size() == args_vector.size());
+
+                std::vector<size_t> indices(args_vector.size());
+                std::iota(indices.begin(), indices.end(), 0);
+
+                return std::all_of(indices.begin(), indices.end(),
+                        [&args_vector, &res_vector](auto i) {
+                            auto& args = args_vector[i];
+                            return res_vector[i] == modular_arithmetic::divides(args[0], args[1], args[2]);
+                        });
+            }
         };
         return tests;
     }
