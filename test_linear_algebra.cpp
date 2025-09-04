@@ -3,7 +3,6 @@
 #include "modular_arithmetic_test.hpp"
 #include "vector_test.hpp"
 #include "matrix_test.hpp"
-#include "set_test.hpp"
 #include "permutation_test.hpp"
 
 #include <iterator>
@@ -71,7 +70,6 @@ int main() {
             vector_tests_getter,
             matrix_tests_getter,
             modular_arithmetic_tests_getter,
-            set_tests_getter,
             permutation_tests_getter
             >{}.get_tests<
                 double,
