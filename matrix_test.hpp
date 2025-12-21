@@ -377,6 +377,26 @@ bool test_svd_simple() {
     return passed;
 }
 
+template<class Number>
+auto test_matrix_multiply_perf() {
+    auto A = linear_algebra::fixsized_matrix<Number, 16, 16>{};
+    auto B = A;
+    auto get_random_matrix = random_matrix<Number>();
+    get_random_matrix(A);
+    get_random_matrix(B);
+    auto clock = std::chrono::high_resolution_clock{};
+    auto begin_time = clock.now();
+    Number det = 0;
+    {
+        auto C = A * B;
+        det = determinant(C);
+    }
+    auto end_time = clock.now();
+    auto duration = end_time - begin_time;
+    std::cout << det;
+    return duration;
+}
+
 template<class Scalar>
 class matrix_tests_getter {
 public:
@@ -390,6 +410,16 @@ public:
             test_eigenvalues<Scalar>,
             test_diagonal_matrix<Scalar>,
             test_svd_simple<Scalar>,
+        };
+        return tests;
+    }
+};
+template<class Scalar>
+class matrix_perf_tests_getter {
+public:
+    auto get_tests() {
+        auto tests = std::vector{
+            test_matrix_multiply_perf<Scalar>
         };
         return tests;
     }

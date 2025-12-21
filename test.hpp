@@ -32,3 +32,18 @@ bool run_simple_tests(std::string name, std::vector<std::function<bool()>> simpl
 
     return all_passed;
 }
+
+void run_perf_tests(std::string name, auto& tests) {
+    auto tests_size = tests.size();
+
+    std::for_each(std::execution::seq, tests.begin(), tests.end(),
+            [&name, &tests](auto& test) {
+                auto duration = test();
+
+                auto i = &test - tests.data();
+
+                std::osyncstream synced_out(std::cout);
+                synced_out << name << ": perf test " << i << " ";
+                synced_out << duration << std::endl;
+            });
+}

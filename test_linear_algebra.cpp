@@ -62,24 +62,39 @@ public:
     }
 };
 
-int main() {
-    bool success = true;
+int main(int argc, const char* argv[]) {
+    if (argc == 1) {
+        bool success = true;
 
-    auto tests =
-        different_tests_getter<
-            vector_tests_getter,
-            matrix_tests_getter,
-            modular_arithmetic_tests_getter,
-            permutation_tests_getter
+        auto tests =
+            different_tests_getter<
+                vector_tests_getter,
+                matrix_tests_getter,
+                modular_arithmetic_tests_getter,
+                permutation_tests_getter
+                >{}.get_tests<
+                    double,
+                    float,
+                    complex<double>,
+                    complex<float>
+                >();
+
+        auto all_passed = run_simple_tests("", tests);
+        std::cout << "all passed: " << (all_passed?"true":"false") << std::endl;
+        return all_passed ? 0 : -1;
+    }
+    else {
+        auto tests =
+            different_tests_getter<
+                matrix_perf_tests_getter
             >{}.get_tests<
                 double,
                 float,
                 complex<double>,
                 complex<float>
             >();
-
-    auto all_passed = run_simple_tests("", tests);
-    std::cout << "all passed: " << (all_passed?"true":"false") << std::endl;
-    
-    return all_passed ? 0 : -1;
+        run_perf_tests("", tests);
+        return 0;
+    }
+        
 }
