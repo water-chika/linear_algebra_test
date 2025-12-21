@@ -383,8 +383,8 @@ template<class Number, uint32_t M, uint32_t N, uint32_t K>
 class test_matrix_multiply_perf{
 public:
     auto operator()() {
-        auto A = linear_algebra::fixsized_matrix<Number, M, K>{};
-        auto B = linear_algebra::fixsized_matrix<Number, K, N>{};
+        auto A = linear_algebra::dynamic_sized_matrix<Number>{{M, N}};
+        auto B = linear_algebra::dynamic_sized_matrix<Number>{{K, N}};
         auto get_random_matrix = random_matrix<Number>();
         get_random_matrix(A);
         get_random_matrix(B);
@@ -435,7 +435,8 @@ public:
         auto tests = variant_vector(
             test_matrix_multiply_perf<Scalar, 16, 16, 16>{},
             test_matrix_multiply_perf<Scalar, 32, 32, 32>{},
-            test_matrix_multiply_perf<Scalar, 128, 128, 128>{}
+            test_matrix_multiply_perf<Scalar, 128, 128, 128>{},
+            test_matrix_multiply_perf<Scalar, 512, 512, 512>{}
         );
         return tests;
     }

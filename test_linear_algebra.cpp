@@ -51,10 +51,10 @@ auto merge_tests(auto&& lhs, auto&& rhs) {
     //using res_type = std::variant<std::remove_cvref_t<decltype(lhs[0])>, std::remove_cvref_t<decltype(rhs[0])>>;
     auto res = std::vector<res_type>(lhs.size() + rhs.size());
 
-    std::transform(rhs.begin(), rhs.end(), std::back_insert_iterator{res},
+    std::transform(rhs.begin(), rhs.end(), res.begin(),
             variant_transform<res_type>{}
             );
-    std::transform(lhs.begin(), lhs.end(), std::back_insert_iterator{res},
+    std::transform(lhs.begin(), lhs.end(), res.begin()+rhs.size(),
             variant_transform<res_type>{}
             );
 
