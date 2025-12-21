@@ -4,6 +4,7 @@
 #include <execution>
 #include <algorithm>
 #include <syncstream>
+#include <variant>
 
 bool run_simple_tests(std::string name, std::vector<std::function<bool()>> simple_tests) {
     auto simple_tests_size = simple_tests.size();
@@ -37,13 +38,25 @@ void run_perf_tests(std::string name, auto& tests) {
     auto tests_size = tests.size();
 
     std::for_each(std::execution::seq, tests.begin(), tests.end(),
-            [&name, &tests](auto& test) {
-                auto duration = test();
+            [&tests](auto& test) {
+                auto duration = std::visit(
+                        [](auto& test) {
+                            return test();
+                        },
+                        test
+                        );
+
+                auto name = std::visit(
+                        [](auto& test) {
+                            return test.get_name();
+                        },
+                        test
+                        );
 
                 auto i = &test - tests.data();
 
                 std::osyncstream synced_out(std::cout);
-                synced_out << name << ": perf test " << i << " ";
+                synced_out << name << ": perf test " << i << ":";
                 synced_out << duration << std::endl;
             });
 }

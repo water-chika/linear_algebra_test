@@ -9,7 +9,8 @@
 
 using std::complex;
 
-auto merge_tests(auto&& lhs, auto&& rhs) {
+template<typename T>
+auto merge_tests(T&& lhs, T&& rhs) {
     lhs.reserve(lhs.size() + rhs.size());
     if (std::is_rvalue_reference_v<decltype(rhs)>) {
         std::move(rhs.begin(), rhs.end(), std::back_insert_iterator{lhs});
@@ -18,6 +19,46 @@ auto merge_tests(auto&& lhs, auto&& rhs) {
         std::copy(rhs.begin(), rhs.end(), std::back_insert_iterator{lhs});
     }
     return std::forward<decltype(lhs)>(lhs);
+}
+
+template<typename... Ts1>
+class merge_variant{
+public:
+    merge_variant(std::variant<Ts1...>){}
+    template<typename... Ts2>
+    std::variant<Ts1..., Ts2...> merge(std::variant<Ts2...>) {
+        return {};
+    }
+};
+
+template<typename T>
+class variant_transform {
+public:
+    auto operator()(auto v) {
+        T res;
+        std::visit(
+                [&res](auto& v) {
+                    res = v;
+                },
+                v
+                );
+        return res;
+    }
+};
+
+auto merge_tests(auto&& lhs, auto&& rhs) {
+    using res_type = decltype(merge_variant(lhs[0]).merge(rhs[0]));
+    //using res_type = std::variant<std::remove_cvref_t<decltype(lhs[0])>, std::remove_cvref_t<decltype(rhs[0])>>;
+    auto res = std::vector<res_type>(lhs.size() + rhs.size());
+
+    std::transform(rhs.begin(), rhs.end(), std::back_insert_iterator{res},
+            variant_transform<res_type>{}
+            );
+    std::transform(lhs.begin(), lhs.end(), std::back_insert_iterator{res},
+            variant_transform<res_type>{}
+            );
+
+    return res;
 }
 
 

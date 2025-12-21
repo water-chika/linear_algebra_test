@@ -18,6 +18,8 @@
 #include <numbers>
 #include <functional>
 #include <vector>
+#include <variant>
+#include <string>
 
 bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto error) {
     return lhs == rhs;
@@ -377,25 +379,31 @@ bool test_svd_simple() {
     return passed;
 }
 
-template<class Number>
-auto test_matrix_multiply_perf() {
-    auto A = linear_algebra::fixsized_matrix<Number, 16, 16>{};
-    auto B = A;
-    auto get_random_matrix = random_matrix<Number>();
-    get_random_matrix(A);
-    get_random_matrix(B);
-    auto clock = std::chrono::high_resolution_clock{};
-    auto begin_time = clock.now();
-    Number det = 0;
-    {
-        auto C = A * B;
-        det = determinant(C);
+template<class Number, uint32_t M, uint32_t N, uint32_t K>
+class test_matrix_multiply_perf{
+public:
+    auto operator()() {
+        auto A = linear_algebra::fixsized_matrix<Number, M, K>{};
+        auto B = linear_algebra::fixsized_matrix<Number, K, N>{};
+        auto get_random_matrix = random_matrix<Number>();
+        get_random_matrix(A);
+        get_random_matrix(B);
+        auto clock = std::chrono::high_resolution_clock{};
+        auto begin_time = clock.now();
+        Number det = 0;
+        {
+            auto C = A * B;
+            det = determinant(C);
+        }
+        auto end_time = clock.now();
+        auto duration = end_time - begin_time;
+        std::cout << det << std::endl;
+        return duration;
     }
-    auto end_time = clock.now();
-    auto duration = end_time - begin_time;
-    std::cout << det;
-    return duration;
-}
+    auto get_name() {
+        return std::format("matrix multiply({},{},{},{})", typeid(Number).name(),M, N, K);
+    }
+};
 
 template<class Scalar>
 class matrix_tests_getter {
@@ -414,13 +422,21 @@ public:
         return tests;
     }
 };
+
+template<typename... Ts>
+auto variant_vector(Ts... ts) {
+    return std::vector<std::variant<Ts...>>{ts...};
+}
+
 template<class Scalar>
 class matrix_perf_tests_getter {
 public:
     auto get_tests() {
-        auto tests = std::vector{
-            test_matrix_multiply_perf<Scalar>
-        };
+        auto tests = variant_vector(
+            test_matrix_multiply_perf<Scalar, 16, 16, 16>{},
+            test_matrix_multiply_perf<Scalar, 32, 32, 32>{},
+            test_matrix_multiply_perf<Scalar, 128, 128, 128>{}
+        );
         return tests;
     }
 };
