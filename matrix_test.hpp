@@ -30,7 +30,8 @@ bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto er
 template<typename T>
     requires (std::floating_point<T> || complex_type<T>)
 bool equal_or_near_equal(T lhs, auto rhs, std::floating_point auto error) {
-    return std::abs(lhs - rhs) <= std::abs(error);
+    bool equal = std::abs(lhs - rhs) <= std::abs(error);
+    return equal;
 }
 
 bool equal_or_near_equal(linear_algebra::concept_helper::matrix auto&& A,
@@ -438,6 +439,24 @@ struct test_svd_simple {
 };
 
 template<class Number, uint32_t M, uint32_t N, uint32_t K>
+class test_matrix_multiply{
+public:
+    bool operator()() {
+        using namespace linear_algebra;
+        auto A = fixsized_matrix<Number,M,K>{};
+        auto B = fixsized_matrix<Number,K,N>{};
+        auto get_random_matrix = random_matrix<Number>();
+        get_random_matrix(A);
+        get_random_matrix(B);
+        auto C = A * B;
+        bool pass = equal_or_near_equal(determinant(C), determinant(A) * determinant(B), 0.0001);
+        return pass;
+    }
+    auto get_name() {
+        return std::format("matrix multiply({},{},{},{})", typeid(Number).name(),M, N, K);
+    }
+};
+template<class Number, uint32_t M, uint32_t N, uint32_t K>
 class test_matrix_multiply_perf{
 public:
     auto operator()() {
@@ -458,8 +477,6 @@ public:
         auto C = A * B;
         auto end_time = clock.now();
         auto duration = end_time - begin_time;
-        auto det = determinant(C);
-        std::cout << det << std::endl;
         return duration;
     }
     auto get_name() {
@@ -479,7 +496,11 @@ public:
             test_trapezoidal<Scalar>{},
             test_eigenvalues<Scalar>{},
             test_diagonal_matrix<Scalar>{},
-            test_svd_simple<Scalar>{}
+            test_svd_simple<Scalar>{},
+            test_matrix_multiply<Scalar, 1, 1, 1>{},
+            test_matrix_multiply<Scalar, 2, 2, 2>{},
+            test_matrix_multiply<Scalar, 4, 4, 4>{},
+            test_matrix_multiply<Scalar, 8, 8, 8>{}
         );
         return tests;
     }
@@ -490,6 +511,7 @@ class matrix_perf_tests_getter {
 public:
     auto get_tests() {
         auto tests = variant_vector(
+            test_matrix_multiply_perf<Scalar, 8, 8, 8>{},
             test_matrix_multiply_perf<Scalar, 16, 16, 16>{},
             test_matrix_multiply_perf<Scalar, 32, 32, 32>{},
             test_matrix_multiply_perf<Scalar, 128, 128, 128>{},

@@ -39,15 +39,14 @@ auto run_tests(std::string name, auto& tests) {
                         );
                 sum += duration;
 
-                auto name = std::visit(
-                        [](auto& test) {
-                            return test.get_name();
+                std::osyncstream synced_out(std::cout);
+                std::visit(
+                        [&synced_out](auto& test) {
+                            synced_out << test.get_name();
                         },
                         test
                         );
-
-                std::osyncstream synced_out(std::cout);
-                synced_out << name << ": ";
+                synced_out << ": ";
                 synced_out << std::format("{}", duration) << std::endl;
             });
     return sum;
