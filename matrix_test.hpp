@@ -49,6 +49,29 @@ bool equal_or_near_equal(linear_algebra::concept_helper::matrix auto&& A,
 template<class Number>
 class random_matrix {
 public:
+    template<typename C>
+    struct uniform_complex_distribution {
+        uniform_complex_distribution(float a, float b) : distribution{a, b} {}
+        C operator()(auto gen) {
+            return C{distribution(gen), distribution(gen)};
+        }
+        std::uniform_real_distribution<float> distribution;
+    };
+    template<typename T>
+    struct distribution_struct {
+        using type = std::uniform_int_distribution<int>;
+    };
+    template<typename T>
+    using distribution = distribution_struct<T>::type;
+    template<std::floating_point F>
+    struct distribution_struct<F> {
+        using type = std::uniform_real_distribution<F>;
+    };
+    template<complex_type C>
+    struct distribution_struct<C> {
+        using type = uniform_complex_distribution<C>;
+    };
+
     random_matrix()
         : m_generator{0}, m_distribution{-2,2}
     {}
@@ -66,7 +89,27 @@ public:
     }
 private:
     std::minstd_rand0 m_generator;
-    std::uniform_int_distribution<int> m_distribution;
+    distribution<Number> m_distribution;
+};
+template<linear_algebra::matrix Matrix>
+class random_matrix<Matrix> {
+public:
+    random_matrix()
+    {}
+    auto operator()() {
+        auto A = linear_algebra::fixsized_matrix<Matrix, 3, 3>{};
+        this->operator()(A);
+        return A;
+    }
+    auto& operator()(linear_algebra::matrix auto& A) {
+        foreach_element(A,
+                [this](auto& e) {
+                    m_get_random(e);
+                });
+        return A;
+    }
+private:
+    random_matrix<linear_algebra::element_type<Matrix>> m_get_random;
 };
 
 bool test_gram_schmidt(linear_algebra::matrix auto A) {
@@ -383,20 +426,24 @@ template<class Number, uint32_t M, uint32_t N, uint32_t K>
 class test_matrix_multiply_perf{
 public:
     auto operator()() {
-        auto A = linear_algebra::dynamic_sized_matrix<Number>{{M, N}};
-        auto B = linear_algebra::dynamic_sized_matrix<Number>{{K, N}};
-        auto get_random_matrix = random_matrix<Number>();
+        using namespace linear_algebra;
+        constexpr uint32_t BLOCK_SIZE = 8;
+        static_assert(M % BLOCK_SIZE == 0 && N % BLOCK_SIZE == 0 && K % BLOCK_SIZE == 0);
+        auto A = dynamic_sized_matrix<
+                    fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>
+                    >{{M/BLOCK_SIZE, N/BLOCK_SIZE}};
+        auto B = dynamic_sized_matrix<
+                    fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>
+                    >{{K/BLOCK_SIZE, N/BLOCK_SIZE}};
+        auto get_random_matrix = random_matrix<fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>>();
         get_random_matrix(A);
         get_random_matrix(B);
         auto clock = std::chrono::high_resolution_clock{};
         auto begin_time = clock.now();
-        Number det = 0;
-        {
-            auto C = A * B;
-            det = determinant(C);
-        }
+        auto C = A * B;
         auto end_time = clock.now();
         auto duration = end_time - begin_time;
+        auto det = determinant(C);
         std::cout << det << std::endl;
         return duration;
     }
