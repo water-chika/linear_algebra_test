@@ -5,46 +5,39 @@
 #include <algorithm>
 #include <syncstream>
 #include <variant>
+#include <vector>
 
-bool run_simple_tests(std::string name, std::vector<std::function<bool()>> simple_tests) {
-    auto simple_tests_size = simple_tests.size();
-    bool all_passed = true;
-    auto clock = std::chrono::high_resolution_clock{};
-
-    std::for_each(std::execution::par_unseq, simple_tests.begin(), simple_tests.end(),
-            [&name, &all_passed, &clock, &simple_tests](auto& test) {
-                auto begin_time = clock.now();
-                bool passed = test();
-                auto end_time = clock.now();
-                auto duration = end_time - begin_time;
-                all_passed = all_passed && passed;
-
-                auto i = &test - simple_tests.data();
-
-                std::osyncstream synced_out(std::cout);
-                synced_out << name << ": simple test " << i << " ";
-                if (passed) {
-                    synced_out << "passed in " << duration << std::endl;
-                }
-                else {
-                    synced_out << "failed" << std::endl;
-                }
-            });
-
-    return all_passed;
+template<typename... Ts>
+auto variant_vector(Ts... ts) {
+    return std::vector<std::variant<Ts...>>{ts...};
 }
 
-void run_perf_tests(std::string name, auto& tests) {
+template<typename T>
+struct sum_type {
+    using type = T;
+};
+template<>
+struct sum_type<bool> {
+    using type = uint32_t;
+};
+template<typename T>
+using sum_t = sum_type<T>::type;
+
+auto run_tests(std::string name, auto& tests) {
     auto tests_size = tests.size();
 
+
+    using res_type = sum_t<decltype(std::visit([](auto&test) { return test(); }, tests[0]))>;
+    res_type sum{};
     std::for_each(std::execution::seq, tests.begin(), tests.end(),
-            [&tests](auto& test) {
+            [&sum](auto& test) {
                 auto duration = std::visit(
                         [](auto& test) {
                             return test();
                         },
                         test
                         );
+                sum += duration;
 
                 auto name = std::visit(
                         [](auto& test) {
@@ -53,10 +46,9 @@ void run_perf_tests(std::string name, auto& tests) {
                         test
                         );
 
-                auto i = &test - tests.data();
-
                 std::osyncstream synced_out(std::cout);
-                synced_out << name << ": perf test " << i << ":";
-                synced_out << duration << std::endl;
+                synced_out << name << ": ";
+                synced_out << std::format("{}", duration) << std::endl;
             });
+    return sum;
 }

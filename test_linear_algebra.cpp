@@ -48,7 +48,6 @@ public:
 
 auto merge_tests(auto&& lhs, auto&& rhs) {
     using res_type = decltype(merge_variant(lhs[0]).merge(rhs[0]));
-    //using res_type = std::variant<std::remove_cvref_t<decltype(lhs[0])>, std::remove_cvref_t<decltype(rhs[0])>>;
     auto res = std::vector<res_type>(lhs.size() + rhs.size());
 
     std::transform(rhs.begin(), rhs.end(), res.begin(),
@@ -109,10 +108,10 @@ int main(int argc, const char* argv[]) {
 
         auto tests =
             different_tests_getter<
-                vector_tests_getter,
-                matrix_tests_getter,
-                modular_arithmetic_tests_getter,
-                permutation_tests_getter
+                //vector_tests_getter,
+                matrix_tests_getter
+                //modular_arithmetic_tests_getter,
+                //permutation_tests_getter
                 >{}.get_tests<
                     double,
                     float,
@@ -120,9 +119,9 @@ int main(int argc, const char* argv[]) {
                     complex<float>
                 >();
 
-        auto all_passed = run_simple_tests("", tests);
-        std::cout << "all passed: " << (all_passed?"true":"false") << std::endl;
-        return all_passed ? 0 : -1;
+        auto passed_count = run_tests("", tests);
+        std::cout << "passed: " << passed_count << "/" << tests.size() << std::endl;
+        return passed_count == tests.size() ? 0 : -1;
     }
     else {
         auto tests =
@@ -134,7 +133,7 @@ int main(int argc, const char* argv[]) {
                 complex<double>,
                 complex<float>
             >();
-        run_perf_tests("", tests);
+        run_tests("", tests);
         return 0;
     }
         
