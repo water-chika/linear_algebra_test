@@ -27,6 +27,8 @@ bool equal_or_near_equal(std::integral auto lhs, std::integral auto rhs, auto er
     return lhs == rhs;
 }
 
+using complex_number::complex_type;
+
 template<typename T>
     requires (std::floating_point<T> || complex_type<T>)
 bool equal_or_near_equal(T lhs, auto rhs, std::floating_point auto error) {
