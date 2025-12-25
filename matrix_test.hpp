@@ -458,20 +458,35 @@ public:
         return std::format("matrix multiply({},{},{},{})", typeid(Number).name(),M, N, K);
     }
 };
+
+constexpr uint32_t BLOCK_SIZE = 2;
+
+template<typename Number, uint32_t M>
+struct block_matrix_struct {
+    using type = linear_algebra::fixsized_matrix<typename block_matrix_struct<Number, M/BLOCK_SIZE>::type, BLOCK_SIZE, BLOCK_SIZE>;
+};
+template<typename Number, uint32_t M>
+using block_matrix = block_matrix_struct<Number, M>::type;
+
+template<typename Number>
+struct block_matrix_struct<Number, BLOCK_SIZE> {
+    using type = linear_algebra::fixsized_matrix<Number, BLOCK_SIZE, BLOCK_SIZE>;
+};
+template<typename Number, uint32_t M>
+    requires (sizeof(Number) * M * M > 1024 * 1024)
+struct block_matrix_struct<Number, M> {
+    using type = linear_algebra::dynamic_sized_matrix<block_matrix<Number, M/BLOCK_SIZE>, BLOCK_SIZE, BLOCK_SIZE>;
+};
+
 template<class Number, uint32_t M, uint32_t N, uint32_t K>
+    requires (M == N && N == K)
 class test_matrix_multiply_perf{
 public:
     auto operator()() {
         using namespace linear_algebra;
-        constexpr uint32_t BLOCK_SIZE = 8;
-        static_assert(M % BLOCK_SIZE == 0 && N % BLOCK_SIZE == 0 && K % BLOCK_SIZE == 0);
-        auto A = dynamic_sized_matrix<
-                    fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>
-                    >{{M/BLOCK_SIZE, N/BLOCK_SIZE}};
-        auto B = dynamic_sized_matrix<
-                    fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>
-                    >{{K/BLOCK_SIZE, N/BLOCK_SIZE}};
-        auto get_random_matrix = random_matrix<fixsized_matrix<Number,BLOCK_SIZE,BLOCK_SIZE>>();
+        auto A = block_matrix<Number, M>{};
+        auto B = block_matrix<Number, K>{};
+        auto get_random_matrix = random_matrix<linear_algebra::element_type<decltype(A)>>();
         get_random_matrix(A);
         get_random_matrix(B);
         auto clock = std::chrono::high_resolution_clock{};

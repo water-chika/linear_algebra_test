@@ -133,7 +133,8 @@ int main(int argc, const char* argv[]) {
                 complex<double>,
                 complex<float>
             >();
-        run_tests("", tests);
+        auto duration = run_tests("", tests);
+        std::cout << "duration: " << duration << "(test count " << tests.size() << ")" << std::endl;
         return 0;
     }
         
