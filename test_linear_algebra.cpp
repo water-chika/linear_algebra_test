@@ -120,7 +120,6 @@ int main(int argc, const char* argv[]) {
                 >();
 
         auto passed_count = run_tests("", tests);
-        std::cout << "passed: " << passed_count << "/" << tests.size() << std::endl;
         return passed_count == tests.size() ? 0 : -1;
     }
     else {
@@ -134,7 +133,6 @@ int main(int argc, const char* argv[]) {
                 complex<float>
             >();
         auto duration = run_tests("", tests);
-        std::cout << "duration: " << duration << "(test count " << tests.size() << ")" << std::endl;
         return 0;
     }
         
