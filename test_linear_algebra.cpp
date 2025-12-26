@@ -108,7 +108,7 @@ int main(int argc, const char* argv[]) {
 
         auto tests =
             different_tests_getter<
-                //vector_tests_getter,
+                vector_tests_getter,
                 matrix_tests_getter
                 //modular_arithmetic_tests_getter,
                 //permutation_tests_getter

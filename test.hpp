@@ -8,9 +8,19 @@
 #include <vector>
 
 template<typename... Ts>
-auto variant_vector(Ts... ts) {
-    return std::vector<std::variant<Ts...>>{ts...};
-}
+struct variant_container {
+    variant_container(Ts... ts) : m_list{ts...} {
+    }
+
+    operator std::vector<std::variant<Ts...>> () {
+        return m_list;
+    }
+    auto move_list() {
+        return std::move(m_list);
+    }
+
+    std::vector<std::variant<Ts...>> m_list;
+};
 
 template<typename T>
 struct sum_type {

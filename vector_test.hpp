@@ -7,6 +7,26 @@
 
 #include "test.hpp"
 
+using namespace std::literals;
+
+template<typename Child>
+struct test_for {
+    auto get_name() {
+        return typeid(Child).name();
+    }
+};
+
+struct simple_vector_test {
+    simple_vector_test(bool (*p)()) : m_fun(p) {}
+    bool operator()() {
+        return m_fun();
+    }
+    auto get_name() {
+        return "simple vector test"s;
+    }
+    std::function<bool()> m_fun;
+};
+
 template<class Vector>
 bool test0() {
     using Element = float;
@@ -67,7 +87,7 @@ class vector_tests_getter {
 public:
     auto get_tests() {
         using namespace linear_algebra;
-        std::vector<std::function<bool()>> simple_tests{
+        auto simple_tests = std::vector<std::variant<simple_vector_test>>{
             test0<fixsized_vector<Number, 2>>,
             test0<resizeable_vector<Number>>,
             test1<fixsized_vector<Number, 3>>,

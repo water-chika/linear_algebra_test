@@ -505,7 +505,7 @@ template<class Scalar>
 class matrix_tests_getter {
 public:
     auto get_tests() {
-        auto tests = variant_vector(
+        auto tests = variant_container{
             test_gram_schmidt<Scalar>{},
             test_determinant<Scalar>{},
             test_inverse<Scalar>{},
@@ -517,8 +517,8 @@ public:
             test_matrix_multiply<Scalar, 1, 1, 1>{},
             test_matrix_multiply<Scalar, 2, 2, 2>{},
             test_matrix_multiply<Scalar, 4, 4, 4>{},
-            test_matrix_multiply<Scalar, 8, 8, 8>{}
-        );
+            test_matrix_multiply<Scalar, 8, 8, 8>{},
+        }.move_list();
         return tests;
     }
 };
@@ -527,13 +527,13 @@ template<class Scalar>
 class matrix_perf_tests_getter {
 public:
     auto get_tests() {
-        auto tests = variant_vector(
+        auto tests = variant_container{
             test_matrix_multiply_perf<Scalar, 8, 8, 8>{},
             test_matrix_multiply_perf<Scalar, 16, 16, 16>{},
             test_matrix_multiply_perf<Scalar, 32, 32, 32>{},
             test_matrix_multiply_perf<Scalar, 128, 128, 128>{},
             test_matrix_multiply_perf<Scalar, 512, 512, 512>{}
-        );
+        }.move_list();
         return tests;
     }
 };
