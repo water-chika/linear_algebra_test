@@ -126,24 +126,26 @@ struct test_gram_schmidt {
         bool passed = true;
         foreach_index(QT_Q,
                 [&QT_Q, &passed](auto i) {
+                    auto m = std::max(i.get_row(), i.get_column())+1;
+                    auto error = m * std::cbrt(linear_algebra::accuracy<Number>);
                     if (i.get_column() == i.get_row()) {
                         passed = passed &&
-                            ( equal_or_near_equal(QT_Q[i], static_cast<element_t>(1), 0.0001)
+                            ( equal_or_near_equal(QT_Q[i], static_cast<element_t>(1), error)
                               ||
-                              equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), 0.0001)
+                              equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), error)
                             );
                     }
                     else {
-                        passed = passed && equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), 0.0001);
+                        passed = passed && equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), error);
                     }
                 });
         passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
         if (!passed) {
-            std::cout << "A=" << A << std::endl;
-            std::cout << "Q=" << Q << std::endl;
-            std::cout << "QT*Q=" << QT_Q << std::endl;
-            std::cout << "R=" << R << std::endl;
-            std::cout << "Q*R=" << Q*R << std::endl;
+            std::cerr << "A=" << A << std::endl;
+            std::cerr << "Q=" << Q << std::endl;
+            std::cerr << "QT*Q=" << QT_Q << std::endl;
+            std::cerr << "R=" << R << std::endl;
+            std::cerr << "Q*R=" << Q*R << std::endl;
         }
         return passed;
     }
@@ -334,8 +336,8 @@ struct test_trapezoidal {
             auto len2 = length_square(U);
             if (!equal_or_near_equal(len2, static_cast<Number>(1), len2*(1.0/(1<<20))*i))
             {
-                std::cout << "U" << i << " = " << len2 << std::endl;
-                std::cout << "error = " << len2 - 1 << std::endl;
+                std::cerr << "U" << i << " = " << len2 << std::endl;
+                std::cerr << "error = " << len2 - 1 << std::endl;
                 passed = false;
                 break;
             }
@@ -401,14 +403,19 @@ struct test_diagonal_matrix {
     }
 };
 
+template<linear_algebra::concept_helper::matrix MatrixS>
 bool test_svd(auto A) {
-    auto [U, S, VT] = svd(A);
+    auto [U, S, VT] = svd<MatrixS>(A);
     auto V = transpose(VT);
     auto passed = equal_or_near_equal(A*V, U*S, 0.00001);
     if (!passed) {
-        std::cout << "A*V=" << A*V << std::endl;
-        std::cout << "U*S=" << U*S << std::endl;
-        std::cout << "A*V-U*S=" << A*V-U*S << std::endl;
+        std::cerr << "A=" << A << std::endl;
+        std::cerr << "U=" << U << std::endl;
+        std::cerr << "S=" << S << std::endl;
+        std::cerr << "VT=" << VT << std::endl;
+        std::cerr << "A*V=" << A*V << std::endl;
+        std::cerr << "U*S=" << U*S << std::endl;
+        std::cerr << "A*V-U*S=" << A*V-U*S << std::endl;
     }
 
     return passed;
@@ -428,12 +435,12 @@ struct test_svd_simple {
                 });
         auto N = A.size().get_column();
         A /= static_cast<linear_algebra::element_type<decltype(A)>>(N*N);
-        auto passed = test_svd(A);
+        auto passed = test_svd<linear_algebra::fixsized_matrix<complex_number::to_complex_t<Number>, 10, 10>>(A);
 
         auto get_random_matrix = random_matrix<Number>();
         for (int i = 0; passed && i < 100; i++) {
             auto A = get_random_matrix();
-            passed = passed && test_svd(A);
+            passed = passed && test_svd<linear_algebra::dynamic_sized_matrix<complex_number::to_complex_t<Number>>>(A);
         }
 
         return passed;
