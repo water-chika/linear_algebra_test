@@ -223,7 +223,7 @@ struct test_inverse {
         auto passed = 
             length(
                 Vector2{ -2, 1 } -
-                inverse(
+                linear_algebra::inverse(
                     M2{
                     {2, 5},
                     {1, 4}
@@ -233,7 +233,7 @@ struct test_inverse {
 
             length(
                 Vector3{3.0 / 4, -1.0 / 2, 1.0 / 4} -
-                inverse(
+                linear_algebra::inverse(
                     M3{
                     {2, 1, 0},
                     {1, 2, 1},
