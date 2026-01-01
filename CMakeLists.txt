@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 
 project(linear_algebra_test)
 
-add_subdirectory(linear_algebra)
-
 add_executable(test_linear_algebra
     test_linear_algebra.cpp
     matrix_test.hpp
@@ -11,8 +9,8 @@ add_executable(test_linear_algebra
 )
 target_include_directories(test_linear_algebra PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-set_target_properties(test_linear_algebra PROPERTIES CXX_STANDARD 23)
+target_compile_features(test_linear_algebra PUBLIC cxx_std_23)
 target_link_libraries(test_linear_algebra linear_algebra)
 
-find_library(tbb tbb)
-target_link_libraries(test_linear_algebra tbb)
+#find_library(tbb tbb)
+#target_link_libraries(test_linear_algebra tbb)
