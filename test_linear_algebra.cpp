@@ -104,15 +104,24 @@ public:
     }
 };
 
-__global__
-void test0() {
-    using Vector = linear_algebra::fixsized_vector<float, 2>;
-    auto a = Vector{1.0f, 0.0f};
-    a *= 2.0f;
-}
+struct test_gpu {
+    __device__
+    static inline auto invoke() {
+        bool res = test0<linear_algebra::fixsized_vector<float, 2>>();
+        return res;
+    }
+    __device__
+    test_gpu() {
+        m_res = invoke();
+    }
+    __device__
+    operator bool() {
+        return m_res;
+    }
+    bool m_res;
+};
 
 int main(int argc, const char* argv[]) {
-    test0<<<dim3(1,1,1), dim3(1,1,1), 0>>>();
     if (argc == 1) {
         bool success = true;
 
@@ -130,7 +139,14 @@ int main(int argc, const char* argv[]) {
                 >();
 
         auto passed_count = run_tests("", tests);
-        return passed_count == tests.size() ? 0 : -1;
+
+        bool gpu_pass_count = hip_helper::hybrid_call<test_gpu>{};
+
+        if (!gpu_pass_count) {
+            std::cerr << "gpu test  failed";
+        }
+
+        return passed_count == tests.size() && gpu_pass_count ? 0 : -1;
     }
     else {
         auto tests =

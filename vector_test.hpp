@@ -28,6 +28,7 @@ struct simple_vector_test {
 };
 
 template<class Vector>
+__device__ __host__
 bool test0() {
     using Element = float;
     Vector a{1.0f, 0.0f};
