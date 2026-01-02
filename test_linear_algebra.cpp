@@ -7,6 +7,8 @@
 
 #include <iterator>
 
+#include "hip_helper.hpp"
+
 using std::complex;
 
 template<typename T>
@@ -102,7 +104,15 @@ public:
     }
 };
 
+__global__
+void test0() {
+    using Vector = linear_algebra::fixsized_vector<float, 2>;
+    auto a = Vector{1.0f, 0.0f};
+    a *= 2.0f;
+}
+
 int main(int argc, const char* argv[]) {
+    test0<<<dim3(1,1,1), dim3(1,1,1), 0>>>();
     if (argc == 1) {
         bool success = true;
 
