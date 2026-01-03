@@ -107,18 +107,27 @@ public:
 struct test_gpu {
     __device__
     static inline auto invoke() {
-        bool res = test0<linear_algebra::fixsized_vector<float, 2>>();
-        return res;
+        using linear_algebra::fixsized_vector;
+        using Number = float;
+        uint32_t count = 0;
+        count += test0<linear_algebra::fixsized_vector<float, 2>>();
+        count += test1<fixsized_vector<Number, 3>>();
+        count += test_add<fixsized_vector<Number, 2>>();
+        count += test_sub<fixsized_vector<Number, 2>>();
+        count += test_element_multi<fixsized_vector<Number, 2>>();
+        count += test_ranged_for<fixsized_vector<Number, 2>>();
+        count += test_negative<fixsized_vector<Number, 2>>();
+        return count;
     }
     __device__
     test_gpu() {
         m_res = invoke();
     }
     __device__
-    operator bool() {
+    operator uint32_t() {
         return m_res;
     }
-    bool m_res;
+    uint32_t m_res;
 };
 
 int main(int argc, const char* argv[]) {
@@ -140,10 +149,10 @@ int main(int argc, const char* argv[]) {
 
         auto passed_count = run_tests("", tests);
 
-        bool gpu_pass_count = hip_helper::hybrid_call<test_gpu>{};
+        uint32_t gpu_pass_count = hip_helper::hybrid_call<test_gpu>{};
 
-        if (!gpu_pass_count) {
-            std::cerr << "gpu test  failed";
+        if (gpu_pass_count < 7) {
+            std::cerr << "gpu test pass count: " << gpu_pass_count;
         }
 
         return passed_count == tests.size() && gpu_pass_count ? 0 : -1;
