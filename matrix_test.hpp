@@ -174,6 +174,7 @@ struct test_determinant {
     auto get_name() {
         return typeid(decltype(*this)).name();
     }
+    __device__ __host__
     bool operator()() {
         using Matrix = linear_algebra::fixsized_matrix<Number, 3, 3>;
         auto A = Matrix{

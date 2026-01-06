@@ -109,14 +109,17 @@ struct test_gpu {
     static inline auto invoke() {
         using linear_algebra::fixsized_vector;
         using Number = float;
+        using Scalar = float;
         uint32_t count = 0;
-        count += test0<linear_algebra::fixsized_vector<float, 2>>();
+        count += test0<linear_algebra::fixsized_vector<Number, 2>>();
         count += test1<fixsized_vector<Number, 3>>();
         count += test_add<fixsized_vector<Number, 2>>();
         count += test_sub<fixsized_vector<Number, 2>>();
         count += test_element_multi<fixsized_vector<Number, 2>>();
         count += test_ranged_for<fixsized_vector<Number, 2>>();
         count += test_negative<fixsized_vector<Number, 2>>();
+
+        count += test_determinant<Scalar>{}();
         return count;
     }
     __device__
@@ -151,7 +154,7 @@ int main(int argc, const char* argv[]) {
 
         uint32_t gpu_pass_count = hip_helper::hybrid_call<test_gpu>{};
 
-        if (gpu_pass_count < 7) {
+        if (gpu_pass_count < 8) {
             std::cerr << "gpu test pass count: " << gpu_pass_count;
         }
 
