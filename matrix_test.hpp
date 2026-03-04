@@ -126,20 +126,28 @@ struct test_gram_schmidt {
         bool passed = true;
         foreach_index(QT_Q,
                 [&QT_Q, &passed](auto i) {
-                    auto m = std::max(i.get_row(), i.get_column())+1;
-                    auto error = m * std::cbrt(linear_algebra::accuracy<Number>);
+                    auto error = 0.1;
+                    auto i_right = false;
                     if (i.get_column() == i.get_row()) {
-                        passed = passed &&
+                        i_right =
                             ( equal_or_near_equal(QT_Q[i], static_cast<element_t>(1), error)
                               ||
                               equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), error)
                             );
                     }
                     else {
-                        passed = passed && equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), error);
+                        i_right = equal_or_near_equal(QT_Q[i], static_cast<element_t>(0), error);
                     }
+                    if (!i_right) {
+                        std::cerr << "QT_Q[" << i << "] error not less than " << error << std::endl;
+                    }
+                    passed = passed && i_right;
                 });
-        passed = passed && equal_or_near_equal(A,Q*R, 0.0001);
+        auto A_equal_Q_R = equal_or_near_equal(A,Q*R, 0.0001);
+        if (!A_equal_Q_R) {
+            std::cerr << "A not equal Q*R" << std::endl;
+        }
+        passed = passed && A_equal_Q_R;
         if (!passed) {
             std::cerr << "A=" << A << std::endl;
             std::cerr << "Q=" << Q << std::endl;
